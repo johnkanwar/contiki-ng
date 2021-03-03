@@ -38,6 +38,44 @@
  *
  */
 
+//<> ENABLE BLE_DTM_HW_NRF52
+//#ifndef BLE_DTM_HW_ENABLED
+//#define BLE_DTM_HW_ENABLED 1
+//#include "ble_dtm_hw.h"
+//#endif
+
+//<> ENABLE BLE_DTM
+#ifndef BLE_DTM_ENABLED
+#define BLE_DTM_ENABLED 1
+#include "ble_dtm.h"
+#endif
+
+// <e> APP_UART_ENABLED - app_uart - UART driver
+//==========================================================
+#ifndef APP_UART_ENABLED
+#define APP_UART_ENABLED 1
+#endif
+#if  APP_UART_ENABLED
+// <o> APP_UART_DRIVER_INSTANCE  - UART instance used
+ 
+// <0=> 0 
+
+#ifndef APP_UART_DRIVER_INSTANCE
+#define APP_UART_DRIVER_INSTANCE 0
+#endif
+
+#endif //APP_UART_ENABLED
+// </e>
+
+
+// <q> APP_FIFO_ENABLED  - app_fifo - Software FIFO implementation
+ 
+
+#ifndef APP_FIFO_ENABLED
+#define APP_FIFO_ENABLED 1
+#endif
+
+
 
 
 #ifndef SDK_CONFIG_H
