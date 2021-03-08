@@ -117,6 +117,7 @@ PROCESS_THREAD(reactive_process, ev, data)
 	{
 		activate_dtm();
 		run_transmit();
+		PROCESS_PAUSE();
 	}
 	PROCESS_END();
 }

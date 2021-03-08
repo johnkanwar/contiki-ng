@@ -55,6 +55,7 @@ PROCESS_THREAD(easy_interference_process, ev, data)
 	while (1)
 	{
 		run_transmit();
+		PROCESS_PAUSE();
 	}
 	PROCESS_END();
 }
