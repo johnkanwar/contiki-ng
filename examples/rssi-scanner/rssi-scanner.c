@@ -55,8 +55,8 @@ run_rssi_scan(void)
     if(NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi) != RADIO_RESULT_OK) {
       printf(" ff");
     } else {
-      //printf(" %02x", rssi & 0xff);
-	printf("%d", rssi);
+      printf(" %02x", rssi & 0xff);
+	//printf("%d", rssi);
     }
   }
   printf("\n");
