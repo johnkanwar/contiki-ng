@@ -34,6 +34,7 @@
 #include "dev/radio.h"
 #include "net/netstack.h"
 #include <stdio.h>
+
 /*---------------------------------------------------------------------------*/
 PROCESS(rssi_scan_process, "RSSI scanner");
 AUTOSTART_PROCESSES(&rssi_scan_process);
@@ -41,43 +42,76 @@ AUTOSTART_PROCESSES(&rssi_scan_process);
 static radio_value_t channel_min = 11;
 static radio_value_t channel_max = 26;
 /*---------------------------------------------------------------------------*/
-static void
-run_rssi_scan(void)
-{
-  radio_value_t ch;
-  radio_value_t rssi;
-  printf("RSSI:");
-  for(ch = channel_min; ch <= channel_max; ch++) {
-    if(NETSTACK_RADIO.set_value(RADIO_PARAM_CHANNEL, ch) != RADIO_RESULT_OK) {
-      printf("ERROR: failed to change radio channel\n");
-      break;
-    }
-    if(NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi) != RADIO_RESULT_OK) {
-      printf(" ff");
-    } else {
-      printf(" %02x", rssi & 0xff);
-	//printf("%d", rssi);
-    }
-  }
-  printf("\n");
-}
+// static void
+// run_rssi_scan(void)
+// {
+//   radio_value_t ch;
+//   radio_value_t rssi;
+//   printf("RSSI:");
+//   for(ch = channel_min; ch <= channel_max; ch++) {
+
+//     if(NETSTACK_RADIO.set_value(RADIO_PARAM_CHANNEL, ch) != RADIO_RESULT_OK) {
+//       printf("ERROR: failed to change radio channel\n");
+//       break;
+//     }
+//     if(NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi) != RADIO_RESULT_OK) {
+//       printf(" ff");
+//     } else {
+//       printf(" %02x", rssi & 0xff);
+// 	//printf("%d", rssi);
+//     }
+//   }
+//   printf("\n");
+// }
+
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(rssi_scan_process, ev, data)
 {
   radio_value_t tmp;
+  static radio_value_t ch = 11;
+  radio_value_t rssi;
+  static struct etimer et;
+
   PROCESS_BEGIN();
 
+  etimer_set(&et, CLOCK_SECOND * 0.01);
   NETSTACK_MAC.off();
   NETSTACK_RADIO.on();
-  if(NETSTACK_RADIO.get_value(RADIO_CONST_CHANNEL_MIN, &tmp) == RADIO_RESULT_OK) {
+
+  if (NETSTACK_RADIO.get_value(RADIO_CONST_CHANNEL_MIN, &tmp) == RADIO_RESULT_OK)
+  {
     channel_min = tmp;
+    printf("OK! \n");
   }
-  if(NETSTACK_RADIO.get_value(RADIO_CONST_CHANNEL_MAX, &tmp) == RADIO_RESULT_OK) {
+  if (NETSTACK_RADIO.get_value(RADIO_CONST_CHANNEL_MAX, &tmp) == RADIO_RESULT_OK)
+  {
     channel_max = tmp;
+    printf("OK! \n");
   }
 
-  while(true) {
-    run_rssi_scan();
+  while (true)
+  {
+    // run_rssi_scan();
+    for (ch = channel_min; ch <= channel_max; ch++)
+    {
+      if (NETSTACK_RADIO.set_value(RADIO_PARAM_CHANNEL, ch) != RADIO_RESULT_OK)
+      {
+        printf("ERROR: failed to change radio channel\n");
+        break;
+      }
+      PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));                              // <-- -127 error without this. 
+      etimer_reset(&et);
+      if (NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi) != RADIO_RESULT_OK)
+      {
+        printf(" ff");
+      }
+      else
+      {
+        printf(" %02x", rssi & 0xff);
+        //printf("%d", rssi);
+      }
+    }
+    printf("\n");
     PROCESS_PAUSE();
   }
 
