@@ -77,14 +77,14 @@
 #ifdef CSMA_CONF_MAX_BACKOFF
 #define CSMA_MAX_BACKOFF CSMA_CONF_MAX_BACKOFF
 #else
-#define CSMA_MAX_BACKOFF 5
+#define CSMA_MAX_BACKOFF 0 // Changed it to 0 for checking reactive jamming
 #endif
 
 /* macMaxFrameRetries: Maximum number of re-transmissions attampts. Range 0--7 */
 #ifdef CSMA_CONF_MAX_FRAME_RETRIES
 #define CSMA_MAX_FRAME_RETRIES CSMA_CONF_MAX_FRAME_RETRIES
 #else
-#define CSMA_MAX_FRAME_RETRIES 7
+#define CSMA_MAX_FRAME_RETRIES 0  // 7 I changed it to 0 for checking reactive jamming
 #endif
 
 /* Packet metadata */
@@ -278,14 +278,15 @@ schedule_transmission(struct neighbor_queue *n)
   clock_time_t delay;
   int backoff_exponent; /* BE in IEEE 802.15.4 */
 
-  backoff_exponent = MIN(n->collisions + CSMA_MIN_BE, CSMA_MAX_BE);
+  backoff_exponent = 0;//MIN(n->collisions + CSMA_MIN_BE, CSMA_MAX_BE);
 
   /* Compute max delay as per IEEE 802.15.4: 2^BE-1 backoff periods  */
   delay = ((1 << backoff_exponent) - 1) * backoff_period();
   if(delay > 0) {
     /* Pick a time for next transmission */
-    delay = random_rand() % delay;
+    delay = 100000;//random_rand() % delay;
   }
+    delay = 100000;//random_rand() % delay;
 
   LOG_DBG("scheduling transmission in %u ticks, NB=%u, BE=%u\n",
       (unsigned)delay, n->collisions, backoff_exponent);
