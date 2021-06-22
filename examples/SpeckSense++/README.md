@@ -104,7 +104,7 @@ PROCESS_ID 0 activated runs SpeckSense++ togheter with RPL-UDP client. It will r
 ## Process 2
 
 ## CSMA settings
-The Maximum number of re-transmissions attampts are set to 0, in order to identify the SFD jammer more accurate. 
+The Maximum number of re-transmissions attempts are set to 0, in order to identify the SFD jammer more accurate. 
 
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
