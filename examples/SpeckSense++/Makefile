@@ -1,0 +1,28 @@
+CONTIKI_PROJECT = specksense
+all: $(CONTIKI_PROJECT)
+
+PROJECT_SOURCEFILES += kmeans.c
+CONTIKI = ../..
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
+include $(CONTIKI)/Makefile.include
+CFLAGS+=-I$(CONTIKI)
+CFLAGS+=-DPROCESS_ID=1
+CFLAGS+=-DRUN_LENGTH=500 #400	#Mega 800 x 4000
+CFLAGS+=-DNUM_RECORDS=1
+CFLAGS+=-DWITH_BOOST_CPU
+CFLAGS+=-DRADIO_CHANNEL=26 #26
+CFLAGS+=-DPOWER_LEVELS=20
+CFLAGS+=-DTIME_WINDOW=1000 #1000
+CFLAGS+=-DDEBUG_RSSI=1
+CFLAGS+=-DCHANNEL_METRIC=1
+CFLAGS+=-DPROFILING=1
+SRC_FILES += \
+  $(SDK_ROOT)/components/libraries/uart/app_uart \
+SRC_FILES += \
+  $(SDK_ROOT)/components/libraries/uart \
+SRC_FILES += \
+  $(SDK_ROOT)/components/libraries/uart/app_uart_fifo.c \
+
+CUSTOM_RULE_LINK=1
+%.$(TARGET): %.co $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) contiki-$(TARGET).a
+	$(LD) $(LDFLAGS) $(TARGET_STARTFILES) ${filter-out %.a,$^} ${filter %.a,$^} $(TARGET_LIBFILES) -o $@ -lm
