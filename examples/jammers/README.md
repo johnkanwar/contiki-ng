@@ -1,5 +1,4 @@
 # Jammers
-## _Detect and identify radio jamming attacks_
 
 
 This folder contains four different jammers, constant, deceptive, random and SFD jammer. They are all based on [nRF52840_DTM].

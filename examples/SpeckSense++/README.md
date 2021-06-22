@@ -101,7 +101,6 @@ In order to detect the different attacks is it necessary to profile them. In ord
 ## PROCESS_ID
 PROCESS_ID 1 activated runs SpeckSense++ normally. 
 PROCESS_ID 0 activated runs SpeckSense++ togheter with RPL-UDP client. It will run RPL-UDP client and if the connetion fails 20 times will it turn off the RPL-UDP process and start a SpeckSense++. The SpeckSense++ will run 10 times before trying to get a stable connection again.  
-## Process 2
 
 ## CSMA settings
 The Maximum number of re-transmissions attempts are set to 0, in order to identify the SFD jammer more accurate. 
