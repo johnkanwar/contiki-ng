@@ -14,6 +14,8 @@ struct record{
 
 
 int kmeans(struct record *, int rle_ptr);
+int kmeans_old(struct record *, int rle_ptr);
+
 
 float channel_metric_rssi_threshold(struct record *record, int rle_ptr);
 void channel_rate(struct record *record, int n_clusters);
