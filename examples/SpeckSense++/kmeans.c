@@ -778,7 +778,7 @@ void print_interarrival(uint16_t itr_cnt, int num_clusters) {
         num_occurrences = 0;  max_cnt = 0; intf_idx = 0;
         // printf("K(%d,%d): ",clusters_old[j].burst_size, clusters_old[j].plevel);
 
-        if(0)//for (i = 0; i < num_bursts; i++)
+        if(1)//for (i = 0; i < num_bursts; i++)
         {
             
             if (burst_label[i] == j)
@@ -807,11 +807,11 @@ void print_interarrival(uint16_t itr_cnt, int num_clusters) {
     profiling_inter_bursts_tot++;
     profiling_inter_bursts_mean = profiling_inter_bursts_runs/profiling_inter_bursts_tot;
     
-    // printf("PROFILING: total burst size: %d, total time function run %d, burst size mean: %d \n", 
-    //         profiling_inter_bursts_runs,profiling_inter_bursts_tot,profiling_inter_bursts_mean);
+    printf("PROFILING: total burst size: %d, total time function run %d, burst size mean: %d \n", 
+            profiling_inter_bursts_runs,profiling_inter_bursts_tot,profiling_inter_bursts_mean);
     
-    // printf("PROFILING: total power level: %d, total times function run: %d, power level mean: %d \n",
-    //         profiling_clusters_runs,profiling_clusters_tot,profiling_clusters_mean);
+    printf("PROFILING: total power level: %d, total times function run: %d, power level mean: %d \n",
+            profiling_clusters_runs,profiling_clusters_tot,profiling_clusters_mean);
 
 
     // printf("PROFILING: total bursts created: %d, total time function run %d, burst mean: %d \n", 
