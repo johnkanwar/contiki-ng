@@ -106,15 +106,17 @@ static int print_counter = 0;
 static uint16_t n_clusters;
 
 //! Global variables for RSSI scan
-static int rssi_val, rle_ptr = -1,
+static int rssi_val, rssi_valB, rle_ptr = -1, rle_ptrB = -1,
 					 step_count = 1, cond,
 					 itr,
-					 n_samples, max_samples, rssi_val_mod;
+					 n_samples, max_samples, rssi_val_mod,rssi_val_modB;
 static unsigned rssi_levels[140]; //original 120 test 140
 
 static rtimer_clock_t sample_st, sample_end;
 static struct record record;
+static struct record recordB;
 
+// static unsigned rssi_values_arr[]
 
 #if CHANNEL_METRIC == 2
 static uint16_t cidx;
@@ -176,35 +178,86 @@ udp_init_send()
 #endif
 
 /*---------------------------------------------------------------------------*/
-static void rssi_sampler(int time_window_ms)
+static void rssi_sampler_combined(int time_window_ms)
 {
 	sample_st = RTIMER_NOW();
 	max_samples = time_window_ms * 20;
 	step_count = 1;
 	rle_ptr = -1;
+	rle_ptrB = -1;
 	record.sequence_num = 0;
 	int globalCounter = 0;
 	print_counter = 0;
 
-	printf("\n START \n");
+	printf("\n START combined\n");
+
+	// for (int i = 0; i < (RUN_LENGTH); i++)
+	// {
+	// 	// printf("Old values: [0]: %d  [1]: %d \n", record.rssi_rle[i][0],record.rssi_rle[i][1]);
+
+	// 	record.rssi_rle[i][0] = 0;
+	// 	record.rssi_rle[i][1] = 0;
+	// }
 
 	record.sequence_num++;
 	rle_ptr = -1;
 	record.rssi_rle[0][1] = 0;
 	record.rssi_rle[0][0] = 0;
+	rle_ptrB = -1;
+	recordB.rssi_rle[0][1] = 0;
+	recordB.rssi_rle[0][0] = 0;
 	n_samples = max_samples * 10;
 	//   watchdog_stop();
 	print_counter = 0;
-
+	int times = 0;
+	// watchdog_periodic();
 	while ((rle_ptr < RUN_LENGTH)){
-
+		times ++;
 		/*Get RSSI value*/
 		if (NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi_val) != RADIO_RESULT_OK){
 			printf(" ff");
 		}
 
 		rssi_val -= 45; /* compensation offset */
+		rssi_valB = rssi_val;
 		int16_t debug_rssi = rssi_val;
+
+
+
+		/*This should be incremented*/
+		/*Loading for a potential Bluetooth, WiFi interference check. */
+		if(rle_ptrB < RUN_LENGTH){
+			n_samples = n_samples - 1;
+			
+			rssi_valB = ((signed char) rssi_valB);
+			cond = 0x01 & (( recordB.rssi_rle[rle_ptrB][0] != rssi_levels[-rssi_valB-1]) | (recordB.rssi_rle[rle_ptrB][1] == 32767));
+			
+			/*----------------*/
+			/*Max_duration achieved, move to next value*/
+			if (recordB.rssi_rle[rle_ptrB][1] >= MAX_DURATION){
+				cond = 1; /*Jump to next value*/
+			}
+			/*----------------*/
+			rle_ptrB = rle_ptrB + cond;
+			rssi_val_modB = -rssi_valB - 1;
+
+			/*Check out of bounds*/
+			if (rssi_val_modB >= 140){
+				rssi_val_modB = 139;
+				// printf("out of loop I guess\n");
+			}
+			/*----------------*/
+
+		//rle_ptrB = rle_ptrB + cond;
+			recordB.rssi_rle[rle_ptrB][0] = rssi_levels[rssi_val_modB];
+			recordB.rssi_rle[rle_ptrB][1] = (record.rssi_rle[rle_ptrB][1]) * (1-cond) + 1 ;
+		}
+
+
+
+
+
+
 
 		/*If power level is <= 2 set it to power level 1*/
 		if (debug_rssi <= -132){
@@ -228,13 +281,14 @@ static void rssi_sampler(int time_window_ms)
 			/*Check out of bounds*/
 			if (rssi_val_mod >= 140){
 				rssi_val_mod = 139;
+				// printf("out of loop I guess\n");
 			}
 
 			/*Create 2D vector*/
 			record.rssi_rle[rle_ptr][0] = rssi_levels[rssi_val_mod];
 			record.rssi_rle[rle_ptr][1] = (record.rssi_rle[rle_ptr][1]) * (1 - cond) + 1;
 
-			if (1){
+			if (0){ //Can be removed
 				if (record.rssi_rle[rle_ptr][0] >= 10){
 					//This print is important for the SFD indentification ?
 					printf("%d,%d:", record.rssi_rle[rle_ptr][0], record.rssi_rle[rle_ptr][1]);
@@ -244,8 +298,122 @@ static void rssi_sampler(int time_window_ms)
 				globalCounter++;
 			}
 		}
+		else{					
+			if(rle_ptr == 498)
+			{
+				printf("Debug"); // was a \n before
+			}
+		}
 	}
+	printf("This is how many times the loop looped: %d \n", times);
 
+	// for(int i =0; i < 500; i++)
+	// {
+	// 	for(int k = 0; k < 2; k++)
+	// 	{
+	// 		printf("recordB: [%d][%d] = (%d,%d) \n", i,k,recordB.rssi_rle[i][0],recordB.rssi_rle[i][1]);
+	// 	}
+	// }
+	watchdog_start();
+
+	sample_end = RTIMER_NOW();
+	if (rle_ptrB < RUN_LENGTH)
+		rle_ptrB++;
+	
+	if (rle_ptr < RUN_LENGTH)
+		rle_ptr++;
+
+	printf("\nNumber of sampels %d : rle_ptr %d\n", globalCounter, rle_ptr);
+	printf(" \n");
+	printf(" \n");
+}
+/*---------------------------------------------------------------------------*/
+static void rssi_sampler(int time_window_ms)
+{
+	sample_st = RTIMER_NOW();
+	max_samples = time_window_ms * 20;
+	step_count = 1;
+	rle_ptr = -1;
+	record.sequence_num = 0;
+	int globalCounter = 0;
+	print_counter = 0;
+
+	printf("\n START \n");
+
+	// for (int i = 0; i < (RUN_LENGTH); i++)
+	// {
+	// 	// printf("Old values: [0]: %d  [1]: %d \n", record.rssi_rle[i][0],record.rssi_rle[i][1]);
+
+	// 	record.rssi_rle[i][0] = 0;
+	// 	record.rssi_rle[i][1] = 0;
+	// }
+
+	record.sequence_num++;
+	rle_ptr = -1;
+	record.rssi_rle[0][1] = 0;
+	record.rssi_rle[0][0] = 0;
+	n_samples = max_samples * 10;
+	//   watchdog_stop();
+	print_counter = 0;
+	int times = 0;
+	watchdog_periodic();
+	while ((rle_ptr < RUN_LENGTH)){
+		times ++;
+		/*Get RSSI value*/
+		if (NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi_val) != RADIO_RESULT_OK){
+			printf(" ff");
+		}
+
+		rssi_val -= 45; /* compensation offset */
+		int16_t debug_rssi = rssi_val;
+
+		/*If power level is <= 2 set it to power level 1*/
+		if (debug_rssi <= -132){
+			debug_rssi = -139;
+		}
+
+		/*Power level most be higher than one */
+		if (rssi_levels[-debug_rssi - 1] > 1)	{
+			n_samples = n_samples - 1;
+			cond = 0x01 & ((record.rssi_rle[rle_ptr][0] != rssi_levels[-rssi_val - 1]) | (record.rssi_rle[rle_ptr][1] == 32767));
+
+			/*Max_duration achieved, move to next value*/
+			if (record.rssi_rle[rle_ptr][1] >= MAX_DURATION){
+				cond = 1; /*Jump to next value*/
+			}
+
+			/*Increase rle_ptr when new powerlevel starts recording.*/
+			rle_ptr = rle_ptr + cond;
+			rssi_val_mod = -rssi_val - 1;
+
+			/*Check out of bounds*/
+			if (rssi_val_mod >= 140){
+				rssi_val_mod = 139;
+				// printf("out of loop I guess\n");
+			}
+
+			/*Create 2D vector*/
+			record.rssi_rle[rle_ptr][0] = rssi_levels[rssi_val_mod];
+			record.rssi_rle[rle_ptr][1] = (record.rssi_rle[rle_ptr][1]) * (1 - cond) + 1;
+
+			if (0){ //Can be removed
+				if (record.rssi_rle[rle_ptr][0] >= 10){
+					//This print is important for the SFD indentification ?
+					printf("%d,%d:", record.rssi_rle[rle_ptr][0], record.rssi_rle[rle_ptr][1]);
+					// print_counter ++;
+					
+				}
+				globalCounter++;
+			}
+		}
+		else{					/*I think a problem might be that it loops here without printing anything for a very long amount of time. */
+			if(rle_ptr == 498)
+			{
+				printf("BIRDO"); // was a \n before
+			}
+		}
+	}
+	printf("This is how many times the loop looped: %d \n", times);
 	watchdog_start();
 
 	sample_end = RTIMER_NOW();
@@ -256,6 +424,61 @@ static void rssi_sampler(int time_window_ms)
 	printf(" \n");
 	printf(" \n");
 }
+/*---------------------------------------------------------------------------*/
+
+
+
+/*---------------------------------------------------------------------------*/
+static void rssi_sampler_old(int time_window_ms){
+	sample_st = RTIMER_NOW();
+	max_samples = time_window_ms * 20;
+	step_count = 1; rle_ptr = -1;
+	record.sequence_num = 0;
+     
+     while (step_count <= NUM_RECORDS) {
+
+	  record.sequence_num++;
+	  rle_ptr = -1;
+	  record.rssi_rle[0][1] = 0;
+      record.rssi_rle[0][0] = 0;
+	  n_samples = max_samples;
+
+	  int d_intervall = 0;
+	//   watchdog_periodic();
+	  while ((rle_ptr < RUN_LENGTH) && (n_samples)) {
+			if (NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi_val) != RADIO_RESULT_OK){
+				printf(" ff");
+			}
+	       rssi_val -= 45; /* compensation offset */
+
+		//    if (rssi_levels[-rssi_val - 1] > 1){
+	       n_samples = n_samples - 1;
+	       
+	       rssi_val = ((signed char) rssi_val);
+	       cond = 0x01 & (( record.rssi_rle[rle_ptr][0] != rssi_levels[-rssi_val-1]) | (record.rssi_rle[rle_ptr][1] == 32767));
+	       
+	       rle_ptr = rle_ptr + cond;
+	       record.rssi_rle[rle_ptr][0] = rssi_levels[-rssi_val-1];
+	       record.rssi_rle[rle_ptr][1] = (record.rssi_rle[rle_ptr][1]) * (1-cond) + 1 ;
+	  
+	  		// printf("record.rssi_rle[%d][0] = %d \n",rle_ptr,rssi_levels[-rssi_val-1]);
+			if(d_intervall >= 10)
+			{
+					// printf("asd\n");
+				d_intervall =0;
+			}
+			d_intervall++;
+		// }
+
+	  }
+	  watchdog_start();
+
+	  step_count++;
+     }
+     sample_end = RTIMER_NOW();
+     if (rle_ptr < RUN_LENGTH) rle_ptr++;
+}
+
 /*---------------------------------------------------------------------------*/
 
 static void init_power_levels()
@@ -379,7 +602,7 @@ static void init_power_levels()
 		else if (itr >= 136 && itr < 140)
 			rssi_levels[itr] = 1;
 		else
-			rssi_levels[itr] = 0; // Will never happend
+			rssi_levels[itr] = 1337; // Will never happend
 
 #else
 #error "Power levels should be one of the following values: 2, 4, 8, 16 or 120"
@@ -515,9 +738,55 @@ PROCESS_THREAD(specksense, ev, data)
 		//  leds_on(LEDS_RED);
 		//  leds_on(LEDS_GREEN);
 
-		rssi_sampler(TIME_WINDOW);
-		n_clusters = kmeans(&record, rle_ptr);
-		check_similarity(PROFILING);
+		if(0)
+		{
+			rssi_valB = 0;
+		}
+	/*
+		They need to have the same format after the RSSI sampler
+	*/
+
+		if(1){
+			
+			rssi_sampler_combined(TIME_WINDOW);
+
+			if(0){
+				/* TODO: Basically what I need to do is to send in a bool, and change it to true if unintentionall interference seems to be the case.
+				then run kmeans_old. */
+				n_clusters = kmeans(&record, rle_ptr);
+				check_similarity(PROFILING);
+			}
+			else
+			{
+				n_clusters = kmeans_old(&recordB, rle_ptrB);
+				print_interarrival(RADIO_CHANNEL, n_clusters);
+			}
+			/*If a jamming attack return*/
+			/*else*/
+			/*Run K-means_old check for WiFi and Bluetooth interference*/
+		}
+
+
+
+		if(0){
+			rssi_sampler(TIME_WINDOW);
+		}
+		if(0){
+			rssi_sampler_old(TIME_WINDOW);
+		}
+		/*First check for Bluetooth or WiFi*/
+		
+		if(0){
+			n_clusters = kmeans(&record, rle_ptr);
+			check_similarity(PROFILING);
+		}
+		if(0){
+		/*If nothing do the other check*/
+			printf("--- START OLD_SPECKSENSE ---\n");
+			n_clusters = kmeans_old(&record, rle_ptr);
+			print_interarrival(RADIO_CHANNEL, n_clusters);
+			printf("--- STOP OLD_SPECKSENSE ---\n");
+		}
 
 		PROCESS_PAUSE();
 	}
@@ -614,3 +883,29 @@ PROCESS_THREAD(channel_allocation, ev, data)
 }
 #endif
 /*---------------------------------------------------------------------------*/
+/*
+	TODO: Understand how I can read the Bluetooth values and the WiFi values. 
+		  I think I need to profile the values. 
+		  So basically I need run SpeckSense when it is Bluetooth interference, and WiFi interference. 
+		  And calculate the average clusters created and inter-bursts. 
+
+		  Then I run it again and measure if it is possible to detect the Bluetooth interference and WiFi interference. 
+
+	TODO: Experiments to carry out. 
+		  Run old SpeckSense and check if it identifies WiFi and Bluetooth.
+		  Understand how SpeckSense is understanding Bluetooth
+		  Run and check if old SpeckSense identifies Bluetooth and WiFi.
+		  Run and check if old SpeckSense is triggering on unintentionall attacks. 
+		  Run and check if SpeckSense++ triggers on Bluetooth and WiFi.
+		  Should be about it .
+
+	TODO: Whichlist:
+		  Is it possible to identify both Bluetooth or WiFi somultenously as reading for jamming attacks. 
+		  Because I have stored both values should it absolutley be a possibility. 
+		  If old SpeckSense doesn't identify jamming attacks as bluetooth or WiFi
+		  
+		  Then
+		  Just run both K-means and test if it is a possibility.  
+
+	TODO: It is a possibility to just remove the Bluetooth and WiFi identification.
+*/
