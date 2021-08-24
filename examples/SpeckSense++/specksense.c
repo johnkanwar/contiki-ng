@@ -299,13 +299,13 @@ static void rssi_sampler_combined(int time_window_ms)
 			}
 		}
 		else{					
-			if(rle_ptr == 498)
+			if(rle_ptr == RUN_LENGTH -2)
 			{
-				printf("Debug"); // was a \n before
+				 printf("Debug"); // was a \n before
 			}
 		}
 	}
-	printf("This is how many times the loop looped: %d \n", times);
+	// printf("This is how many times the loop looped: %d \n", times);
 
 	// for(int i =0; i < 500; i++)
 	// {
@@ -430,7 +430,7 @@ static void rssi_sampler(int time_window_ms)
 
 /*---------------------------------------------------------------------------*/
 static void rssi_sampler_old(int time_window_ms){
-	sample_st = RTIMER_NOW();
+	// sample_st = RTIMER_NOW();
 	max_samples = time_window_ms * 20;
 	step_count = 1; rle_ptr = -1;
 	record.sequence_num = 0;
@@ -443,15 +443,15 @@ static void rssi_sampler_old(int time_window_ms){
       record.rssi_rle[0][0] = 0;
 	  n_samples = max_samples;
 
-	  int d_intervall = 0;
 	//   watchdog_periodic();
+ 
+
 	  while ((rle_ptr < RUN_LENGTH) && (n_samples)) {
 			if (NETSTACK_RADIO.get_value(RADIO_PARAM_RSSI, &rssi_val) != RADIO_RESULT_OK){
 				printf(" ff");
 			}
-	       rssi_val -= 45; /* compensation offset */
+	    //    rssi_val -= 45; /* compensation offset */
 
-		//    if (rssi_levels[-rssi_val - 1] > 1){
 	       n_samples = n_samples - 1;
 	       
 	       rssi_val = ((signed char) rssi_val);
@@ -460,22 +460,14 @@ static void rssi_sampler_old(int time_window_ms){
 	       rle_ptr = rle_ptr + cond;
 	       record.rssi_rle[rle_ptr][0] = rssi_levels[-rssi_val-1];
 	       record.rssi_rle[rle_ptr][1] = (record.rssi_rle[rle_ptr][1]) * (1-cond) + 1 ;
-	  
-	  		// printf("record.rssi_rle[%d][0] = %d \n",rle_ptr,rssi_levels[-rssi_val-1]);
-			if(d_intervall >= 10)
-			{
-					// printf("asd\n");
-				d_intervall =0;
-			}
-			d_intervall++;
-		// }
-
+	
 	  }
+		
 	  watchdog_start();
 
 	  step_count++;
      }
-     sample_end = RTIMER_NOW();
+
      if (rle_ptr < RUN_LENGTH) rle_ptr++;
 }
 
@@ -746,7 +738,7 @@ PROCESS_THREAD(specksense, ev, data)
 		They need to have the same format after the RSSI sampler
 	*/
 
-		if(1){
+		if(0){
 			
 			rssi_sampler_combined(TIME_WINDOW);
 
@@ -768,11 +760,19 @@ PROCESS_THREAD(specksense, ev, data)
 
 
 
+
 		if(0){
 			rssi_sampler(TIME_WINDOW);
 		}
-		if(0){
+
+		if(1){
 			rssi_sampler_old(TIME_WINDOW);
+			
+			printf("done sampling on channel 26\n");
+			printf("RSSI");
+			for (int i = 0; i <= rle_ptr; i++)
+				printf(":%d,%d",record.rssi_rle[i][0],record.rssi_rle[i][1]);
+			printf("\nrle_ptr:%d,%d,%d\n",rle_ptr, max_samples, n_samples);
 		}
 		/*First check for Bluetooth or WiFi*/
 		
@@ -780,12 +780,9 @@ PROCESS_THREAD(specksense, ev, data)
 			n_clusters = kmeans(&record, rle_ptr);
 			check_similarity(PROFILING);
 		}
-		if(0){
-		/*If nothing do the other check*/
-			printf("--- START OLD_SPECKSENSE ---\n");
+		if(1){
 			n_clusters = kmeans_old(&record, rle_ptr);
 			print_interarrival(RADIO_CHANNEL, n_clusters);
-			printf("--- STOP OLD_SPECKSENSE ---\n");
 		}
 
 		PROCESS_PAUSE();
