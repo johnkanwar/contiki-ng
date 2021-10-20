@@ -90,6 +90,11 @@ platform_init_stage_two(void)
 void
 platform_init_stage_three(void)
 {
+  uint32_t reset_reason;
+  /*NRF_RESET_Type*/
+  reset_reason = NRF_RESET_S->RESETREAS;
+  printf("Reset reason = 0x%08x\r\n", (unsigned int) reset_reason);
+  NRF_RESET_S->RESETREAS = 0xffffffff;
   process_start(&sensors_process, NULL);
 }
 /*---------------------------------------------------------------------------*/
