@@ -103,6 +103,21 @@ void spu_regions_flash_config_non_secure_callable(uint32_t start_addr, uint32_t 
 void spu_peripheral_config_secure(uint32_t periph_base_addr, bool periph_lock);
 
 /**
+ * \brief Restrict access to peripheral to secure
+ *
+ *  Configure all device peripheral to be accessible from Secure domain only.
+ *
+ * \param nr_IDs nr of peripheral IDs
+ *                         
+ * \param periph_lock Variable indicating whether to lock peripheral security
+ *
+ * \note
+ * - peripheral shall not be a Non-Secure only peripheral
+ * - DMA transactions are configured as Secure
+ */
+void spu_peripheral_config_secure_all(uint32_t nr_IDs, bool periph_lock);
+
+/**
  * Configure a device peripheral to be accessible from Non-Secure domain.
  *
  * \param periph_base_addr peripheral base address

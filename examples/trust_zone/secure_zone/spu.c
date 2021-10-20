@@ -16,6 +16,7 @@
 
 #include "spu.h"
 #include "region_defs.h"
+#include "stdio.h"
 
 /* Platform-specific configuration */
 #define FLASH_SECURE_ATTRIBUTION_REGION_SIZE SPU_FLASH_REGION_SIZE
@@ -90,6 +91,7 @@ void spu_regions_reset_all_secure(void)
             | NRF_SPU_MEM_PERM_WRITE
             | NRF_SPU_MEM_PERM_EXECUTE,
             0 /* No lock */);
+
     }
 }
 
@@ -138,7 +140,8 @@ void spu_regions_sram_config_non_secure(uint32_t start_addr, uint32_t limit_addr
 void spu_regions_flash_config_non_secure_callable(uint32_t start_addr,
     uint32_t limit_addr)
 {
-    //size_t size = limit_addr - start_addr + 1;
+    printf("Running spu_regions_flash_config_non_secure_callable \n");
+    size_t size = limit_addr - start_addr + 1;
 
     uint32_t nsc_size = FLASH_NSC_SIZE_FROM_ADDR(start_addr);
 
@@ -238,6 +241,38 @@ void spu_peripheral_config_secure(uint32_t periph_base_addr, bool periph_lock)
         periph_lock);
 }
 
+void spu_peripheral_config_secure_all(uint32_t nr_IDs, bool periph_lock)
+{
+    /* Determine peripheral ID */
+    // const uint8_t periph_id = NRFX_PERIPHERAL_ID_GET(periph_base_addr);
+
+    /* ASSERT checking that this is not an explicit Non-Secure peripheral */
+    for(int i =0; i < nr_IDs;i++)
+    {
+
+        NRFX_ASSERT((NRF_SPU->PERIPHID[i].PERM &
+            SPU_PERIPHID_PERM_SECUREMAPPING_Msk) !=
+            (SPU_PERIPHID_PERM_SECUREMAPPING_NonSecure <<
+                SPU_PERIPHID_PERM_SECUREMAPPING_Pos));
+
+        if((NRF_SPU->PERIPHID[i].PERM & 
+            SPU_PERIPHID_PERM_SECUREMAPPING_Msk) != 
+            (SPU_PERIPHID_PERM_SECUREMAPPING_NonSecure << 
+            SPU_PERIPHID_PERM_SECUREMAPPING_Pos)){
+
+                printf("That was an explicit Non-Secure peripheral %d\n", i);
+            }else
+            {
+                nrf_spu_peripheral_set(NRF_SPU, i,
+                1 /* Secure */,
+                1 /* Secure DMA */,
+                periph_lock);
+            }
+    }
+}   /*Check how many peripheral ID there are .*/
+
+    
+
 void spu_peripheral_config_non_secure(uint32_t periph_base_addr, bool periph_lock)
 {
     /* Determine peripheral ID */
@@ -254,4 +289,3 @@ void spu_peripheral_config_non_secure(uint32_t periph_base_addr, bool periph_loc
         0 /* Non-Secure DMA */,
         periph_lock);
 }
-
