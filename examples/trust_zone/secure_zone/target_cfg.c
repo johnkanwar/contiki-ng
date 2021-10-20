@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+#include "defines_config.h"
+
+#include "stdio.h"
 #include "target_cfg.h"
 #include "region_defs.h"
-#include "tfm_plat_defs.h"
+#include "tfm_includes/tfm_plat_defs.h"
 #include "region.h"
 
 #include <spu.h>
@@ -132,32 +135,32 @@ enum tfm_plat_err_t system_reset_cfg(void)
     return TFM_PLAT_ERR_SUCCESS;
 }
 
-//enum tfm_plat_err_t init_debug(void)
-//{
-//#if defined(DAUTH_NONE)
-//    /* Disable debugging */
-//    NRF_CTRLAP->APPROTECT.DISABLE = 0;
-//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
-//#elif defined(DAUTH_NS_ONLY)
-//    /* Allow debugging Non-Secure only */
-//    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
-//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
-//#elif defined(DAUTH_FULL) || defined(DAUTH_CHIP_DEFAULT)
-//    /* Allow debugging */
-//    /* Use the configuration in UICR. */
-//    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
-//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = NRF_UICR->SECUREAPPROTECT;
-//#else
-//#error "No debug authentication setting is provided."
-//#endif
-//    /* Lock access to APPROTECT, SECUREAPPROTECT */
-//    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked <<
-//        CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
-//    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked <<
-//        CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
-//
-//    return TFM_PLAT_ERR_SUCCESS;
-//}
+enum tfm_plat_err_t init_debug(void)
+{
+#if defined(DAUTH_NONE)
+    /* Disable debugging */
+    NRF_CTRLAP->APPROTECT.DISABLE = 0;
+    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
+#elif defined(DAUTH_NS_ONLY)
+    /* Allow debugging Non-Secure only */
+    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
+    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
+#elif defined(DAUTH_FULL) || defined(DAUTH_CHIP_DEFAULT)
+    /* Allow debugging */
+    /* Use the configuration in UICR. */
+    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
+    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = NRF_UICR->SECUREAPPROTECT;
+#else
+#error "No debug authentication setting is provided."
+#endif
+    /* Lock access to APPROTECT, SECUREAPPROTECT */
+    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked <<
+        CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
+    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked <<
+        CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
+
+    return TFM_PLAT_ERR_SUCCESS;
+}
 
 /*----------------- NVIC interrupt target state to NS configuration ----------*/
 enum tfm_plat_err_t nvic_interrupt_target_state_cfg(void)
@@ -216,6 +219,13 @@ enum tfm_plat_err_t spu_init_cfg(void)
      */
     spu_regions_reset_all_secure();
 
+
+    printf("Flash non secure start: %p, end: %p \n",memory_regions.non_secure_partition_base,
+        memory_regions.non_secure_partition_limit);
+    printf("sram non secure start: %p, end: %p \n",NS_DATA_START,
+        NS_DATA_LIMIT);
+    printf("nsc non secure start: %p, end: %p \n",memory_regions.veneer_base,
+        memory_regions.veneer_limit - 1);
     /* Configures SPU Code and Data regions to be non-secure */
     spu_regions_flash_config_non_secure(memory_regions.non_secure_partition_base,
         memory_regions.non_secure_partition_limit);
@@ -226,6 +236,7 @@ enum tfm_plat_err_t spu_init_cfg(void)
         memory_regions.veneer_limit - 1);
 
 #ifdef BL2
+    printf("BL1 is defined \n");
     /* Secondary image partition */
     spu_regions_flash_config_non_secure(memory_regions.secondary_partition_base,
         memory_regions.secondary_partition_limit);
@@ -319,4 +330,3 @@ void spu_periph_configure_to_non_secure(uint32_t periph_num)
 {
     spu_peripheral_config_non_secure(periph_num, true);
 }
-

@@ -32,7 +32,7 @@
  */
 
 
-#include "tfm_plat_defs.h"
+#include "tfm_includes/tfm_plat_defs.h"
 
 #define TFM_DRIVER_STDIO    Driver_USART1
 #define NS_DRIVER_STDIO     Driver_USART0
@@ -119,7 +119,7 @@ enum tfm_plat_err_t system_reset_cfg(void);
  *
  * \return Returns values as specified by the \ref tfm_plat_err_t
  */
-//enum tfm_plat_err_t init_debug(void);
+enum tfm_plat_err_t init_debug(void);
 
 /**
  * \brief Configures all external interrupts to target the
