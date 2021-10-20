@@ -14,8 +14,9 @@
 //#include "stdlib.h"
 //#include <arm_cmse.h>
 
+typedef void (*ns_funcptr) (void) __attribute__((cmse_nonsecure_call));
 
-int secure_funcX(void);
+void secure_funcX(ns_funcptr callback);
 int secure_func_entryX(int val);
 int secure_func_non_objX(void);
 
