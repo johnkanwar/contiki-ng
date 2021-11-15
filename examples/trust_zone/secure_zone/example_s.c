@@ -1,49 +1,120 @@
 /*
  * Secure example.
- * This code is compiled into a secure executable
- * with help of -mcmse and co.
  */
 
 #include "contiki.h"
-
-#include <assert.h>
 #include <stdio.h> /* For printf() */
-#include "defines_config.h"
-/*nRF includes*/
-#include "hal/nrf_gpio.h"
-#include "hal/nrf_reset.h"
-#include "hal/nrf_spu.h"
-#include "dev/leds.h"
-#include "dev/button-hal.h"
-#include "nrf5340_application.h" //Includes core_cm33
-#include "system_nrf5340_application.h"
-//#include "tz_context.h"
+
 #include <arm_cmse.h> // CMSE definitions
-#include "spu.h"
-#include "region_defs.h"
-#include "veneer_table.h"
+// #include "veneer_table.h"
 #include "target_cfg.h"
-// #include "subdir/include/boot_hal.h"
 
-/*
- * The linker file
- * contiki-ng/arch/cpu/nrf/lib/nrfx/mdk/nrf_common.ld
- *
- * */
-#define LOCATE_FUNC __attribute__((__section__(".mysection")))
+static int secure_variable = 44;
 
-int LOCATE_FUNC secure_func_read_int(int bar)
+#undef cmse_nsfptr_create
+#define cmse_nsfptr_create(p) ((intptr_t)(p) & ~1)
+
+typedef void (*nsfptr_t)(void) __attribute__((cmse_nonsecure_call));
+
+nsfptr_t ns_entry;
+
+/*Zephyr test*/
+typedef void __attribute__((cmse_nonsecure_call)) (*tz_ns_func_ptr_t)(void);
+#define TZ_NONSECURE_FUNC_PTR_DECLARE(fptr) tz_ns_func_ptr_t fptr
+
+#define TZ_NONSECURE_FUNC_PTR_CREATE(fptr) \
+  ((tz_ns_func_ptr_t)(cmse_nsfptr_create(fptr)))
+
+
+
+
+void jump_to_ns_code(void)
 {
-  return bar;
+  /* Calls the non-secure Reset_Handler to jump to the non-secure binary */
+  ns_entry();
+  // tfm_core_panic();
 }
 
-static int secure_variable = 30;
+void configure_ns_code(void)
+{
+  /* SCB_NS.VTOR points to the Non-secure vector table base address */
+  SCB_NS->VTOR = tfm_spm_hal_get_ns_VTOR();
 
-typedef void (*funcptr_void)(void) __attribute__((cmse_nonsecure_call));
+  /* Setups Main stack pointer of the non-secure code */
+  unsigned int ns_msp = tfm_spm_hal_get_ns_MSP();
 
-/*Specs*/
-// 1 MB Flash & 512 KB RAM
-// The flash memory space is divided into 64 regions of 16 KiB.  //1 ID = 8 KB
+  __TZ_set_MSP_NS(ns_msp);
+
+  /* Get the address of non-secure code entry point to jump there */
+  /*Comparing the position of Reset Handler does it seem like
+    it returns an address off by one, that is the reason why
+    it is - 1U. Have tested both without and with -1U*/
+  unsigned int entry_ptr = tfm_spm_hal_get_ns_entry_point() /*- 1U*/;
+
+
+  printf("vector_table: %p \n MSP %p \n entry point %p \n ", 
+        SCB_NS->VTOR, ns_msp, entry_ptr);
+  
+  // ns_entry = (nsfptr_t)(*((uint32_t *)((tfm_spm_hal_get_ns_VTOR()) + 4U)));
+  // TZ_NONSECURE_FUNC_PTR_DECLARE(ns_entry);
+  // ns_entry = TZ_NONSECURE_FUNC_PTR_CREATE(entry_ptr);
+  ns_entry = (nsfptr_t)cmse_nsfptr_create(entry_ptr);
+}
+
+void core_init(void)
+{
+  /*Enable fault handler*/
+  if (enable_fault_handlers() == TFM_PLAT_ERR_SUCCESS){
+    printf("Succsess\n");
+  }else{
+    printf("Failure\n");
+  }
+
+  system_reset_cfg();
+  // /* Configures the system reset request properties */
+  // if (tfm_spm_hal_system_reset_cfg() == TFM_PLAT_ERR_SUCCESS){
+  //   printf("Succsess\n");
+  // }else{
+  //   printf("Failure\n");
+  // }
+
+  __enable_irq();
+
+  /*Setup the for a jump to non-secure code*/
+  configure_ns_code();
+
+  if (nvic_interrupt_enable() == TFM_PLAT_ERR_SUCCESS){
+    printf("Succsess 2\n");
+  }else{
+    printf("Failure 2\n");
+  }
+
+  TZ_SAU_Enable();
+}
+
+/*START Sparrow test*/
+void __set_MSPA(uint32_t topOfMainStack) __attribute__((naked));
+void __set_MSPA(uint32_t topOfMainStack)
+{
+  __asm volatile("MSR msp, %0\n\t"
+                 "BX lr \n\t"
+                 :
+                 : "r"(topOfMainStack));
+}
+static void boot_image(void)
+{
+  typedef void (*entry_point_t)(void);
+
+  entry_point_t entry_point =
+      (entry_point_t)(*(uint32_t *)(0x00050000 + 4U));
+  uint32_t stack = *(uint32_t *)(0x00050000);
+  *((volatile uint32_t *)(0xE000ED08)) = 0x00050000; // Vector table
+  __set_MSPA(stack);
+
+  entry_point();
+}
+/*END Sparrow test*/
+
 /*---------------------------------------------------------------------------*/
 PROCESS(example_s_process, "Example s process");
 AUTOSTART_PROCESSES(&example_s_process);
@@ -51,64 +122,26 @@ AUTOSTART_PROCESSES(&example_s_process);
 PROCESS_THREAD(example_s_process, ev, data)
 {
 
-  static struct etimer timer;
-  static int i = 0;
   PROCESS_BEGIN();
 
-  etimer_set(&timer, CLOCK_SECOND * 1);
+  printf("SECURE WORLD\n");
+  printf("Secure_variable value: %d, memory address: %p \n", secure_variable, &secure_variable);
 
-  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-  printf("Start\n");
-  printf("__ARM_FEATURE_CMSE %d \n", __ARM_FEATURE_CMSE);
-  printf("This is text printed from secure world \n");
+  core_init();
 
-  /*Configuration*/
+  /*Start of configuration*/
   sau_and_idau_cfg();
 
-  if (enable_fault_handlers() == TFM_PLAT_ERR_SUCCESS){
-    printf("Succsess\n");
-  }else{
-    printf("Failure\n");
-  }
-  if (spu_init_cfg() == TFM_PLAT_ERR_SUCCESS){
-    printf("Succsess 1\n");
-  }else{
-    printf("Failure 1\n");
-  }
-  spu_peripheral_config_secure_all(256 - 1, 1);
+  // printf("Before boot_image() \n");
+  //  boot_image();
 
-  if (nvic_interrupt_enable() == TFM_PLAT_ERR_SUCCESS){
-    printf("Succsess 2\n");
-  }else{
-    printf("Failure 2\n");
-  }
-  TZ_SAU_Enable();
-  // SAU->CTRL &= ~(SAU_CTRL_ALLNS_Msk);
+  __DSB();
+  __ISB();
 
-  printf("Secure_variable value: %d, memory address: %p \n", secure_variable, &secure_variable);
-  printf("Memory addres of secure_func_read_int %p\n", &secure_func_read_int);
-  printf("Calling the secure variable from SECURE zone: %d \n", secure_variable);
-  printf("Calling the secure variable from NON secure zone: %d \n", secure_func_read_int(secure_variable));
-
-  /*Shouldn't be able to touch the peripherials if they are secure*/
-  if (enable_fault_handlers() == TFM_PLAT_ERR_SUCCESS){
-    printf("Succsess 1\n");
-  }else{
-    printf("Failure 1\n");
-  }
-  printf("End of main \n");
-  while (1)
-  {
-
-    PROCESS_YIELD();
-
-    printf("Hello, world %d\n", i);
-    i++;
-    /* Wait for the periodic timer to expire and then restart the timer. */
-    // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-    // etimer_reset(&timer);
-  }
-
+  printf("Jumping to non-secure code \n");
+  jump_to_ns_code();
+  printf("This shouldn't print? \n");
+  
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
