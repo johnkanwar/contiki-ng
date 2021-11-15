@@ -1,9 +1,33 @@
 include $(CONTIKI_CPU)/Makefile.nrfx  
+include $(CONTIKI)/examples/trust_zone/mdk/Makefile.def
 
-LDSCRIPT ?= $(NRFX_ROOT)/mdk/nrf5340_xxaa_application.ld
+#LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application.ld
+
+
+#Override submodule NRFX
+CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/
+
+ifeq ($(secure_build),1)
+    LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application.ld
+else
+    LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my.ld
+endif
+
+#Original
+#LDSCRIPT ?= $(NRFX_ROOT)/mdk/nrf5340_xxaa_application.ld
+#LDSCRIPT ?= $(NRFX_ROOT)/mdk/nrf5340_xxaa_application_ns_my.ld
 CFLAGS += -DNRF5340_XXAA_APPLICATION
 
-NRFX_ASM_SRCS += $(NRFX_ROOT)/mdk/gcc_startup_nrf5340_application.s
+#Override submodule NRFX
+ifeq ($(secure_build),1)
+    NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application.s
+else
+    NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_ns_my.s
+endif
+
+#Original
+#NRFX_ASM_SRCS += $(NRFX_ROOT)/mdk/gcc_startup_nrf5340_application.s
+#NRFX_ASM_SRCS += $(NRFX_ROOT)/mdk/gcc_startup_nrf5340_application_ns_my.s
 
 NRFX_C_SRCS += $(NRFX_ROOT)/mdk/system_nrf5340_application.c
 
