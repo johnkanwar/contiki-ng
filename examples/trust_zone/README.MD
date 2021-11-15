@@ -16,7 +16,7 @@ It follows how TF-M does it.
 When jumping from secure to non-secure does it freze right after the jump is called. 
 
 
-## ~Things tested~
+## ~ Things tested ~
 
 1. Tested the SPM code that Zephyr used for jumping. (That they used Before switching to TF-M.) 
 2. Tested using Sparrows boot_image functions to switch and initalize non-secure build.
@@ -30,11 +30,11 @@ When jumping from secure to non-secure does it freze right after the jump is cal
 
 
 
-## ~Things removed~
+## ~ Things removed ~
 Removed all the secure and non-secure partitioning configuration from example_s.c
 The functions do however exist in spu.h/spu/c
 
-## ~Merge hex files~
+## ~ Merge hex files ~
 Currently do I either merge the hex files manually or with srec.
 
 ## ~ Change build
