@@ -130,30 +130,30 @@ enum tfm_plat_err_t system_reset_cfg(void)
     return TFM_PLAT_ERR_SUCCESS;
 }
 
-enum tfm_plat_err_t init_debug(void)
-{
-#if defined(DAUTH_NONE)
+//enum tfm_plat_err_t init_debug(void)
+//{
+//#if defined(DAUTH_NONE)
     /* Disable debugging */
-    NRF_CTRLAP->APPROTECT.DISABLE = 0;
-    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
-#elif defined(DAUTH_NS_ONLY)
+//    NRF_CTRLAP->APPROTECT.DISABLE = 0;
+//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
+//#elif defined(DAUTH_NS_ONLY)
     /* Allow debugging Non-Secure only */
-    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
-    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
-#elif defined(DAUTH_FULL) || defined(DAUTH_CHIP_DEFAULT)
+//    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
+//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = 0;
+//#elif defined(DAUTH_FULL) || defined(DAUTH_CHIP_DEFAULT)
     /* Allow debugging */
     /* Use the configuration in UICR. */
-    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
-    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = NRF_UICR->SECUREAPPROTECT;
-#else
-#error "No debug authentication setting is provided."
-#endif
+//    NRF_CTRLAP->APPROTECT.DISABLE = NRF_UICR->APPROTECT;
+//    NRF_CTRLAP->SECUREAPPROTECT.DISABLE = NRF_UICR->SECUREAPPROTECT;
+//#else
+//#error "No debug authentication setting is provided."
+//#endif
     /* Lock access to APPROTECT, SECUREAPPROTECT */
-    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
-    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
+//    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
+//    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
 
-    return TFM_PLAT_ERR_SUCCESS;
-}
+//    return TFM_PLAT_ERR_SUCCESS;
+//}
 
 /*----------------- NVIC interrupt target state to NS configuration ----------*/
 enum tfm_plat_err_t nvic_interrupt_target_state_cfg(void)
