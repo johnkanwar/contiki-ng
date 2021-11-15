@@ -1,0 +1,18 @@
+
+secure_build = 0
+
+# If secure_build is true will it use:
+# nrf5340_xxaa_application.ld and gcc_startup_nrf5340_application.s
+# If it is false will it use:
+# nrf5340_xxaa_application_ns_my.ld and gcc_startup_nrf5340_ns_my.s
+
+
+
+
+# TODO perhaps: Create a makefile that builds both builds and
+#       call a bash script to srec them togheter.
+
+# Scribbles
+# Jump into secure_build and build
+# Jump out and into non_secure and build.
+# Merge the hex files and flash to embedded system.
