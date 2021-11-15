@@ -100,6 +100,22 @@ void spu_clear_irq(void);
  */
 void sau_and_idau_cfg(void);
 
+
+/**
+ * \brief Get non-secure vector table.
+ */
+uint32_t tfm_spm_hal_get_ns_VTOR(void);
+
+/**
+ * \brief Get non-secure MSP location. 
+ */
+uint32_t tfm_spm_hal_get_ns_MSP(void);
+
+/**
+ * \brief Get entry point location. 
+ */
+uint32_t tfm_spm_hal_get_ns_entry_point(void);
+
 /**
  * \brief Enables the fault handlers and sets priorities.
  *

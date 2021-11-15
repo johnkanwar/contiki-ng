@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*HERE*/
 #include "defines_config.h"
 
 #include "stdio.h"
@@ -31,39 +31,36 @@
 #define PIN_XL2 1
 
 struct platform_data_t tfm_peripheral_timer0 = {
-        NRF_TIMER0_S_BASE,
-        NRF_TIMER0_S_BASE + (sizeof(NRF_TIMER_Type) - 1),
+    NRF_TIMER0_S_BASE,
+    NRF_TIMER0_S_BASE + (sizeof(NRF_TIMER_Type) - 1),
 };
 
 struct platform_data_t tfm_peripheral_std_uart = {
-        NRF_UARTE1_S_BASE,
-        NRF_UARTE1_S_BASE + (sizeof(NRF_UARTE_Type) - 1),
+    NRF_UARTE1_S_BASE,
+    NRF_UARTE1_S_BASE + (sizeof(NRF_UARTE_Type) - 1),
 };
 
 #ifdef PSA_API_TEST_IPC
 struct platform_data_t
     tfm_peripheral_FF_TEST_SERVER_PARTITION_MMIO = {
         FF_TEST_SERVER_PARTITION_MMIO_START,
-        FF_TEST_SERVER_PARTITION_MMIO_END
-};
+        FF_TEST_SERVER_PARTITION_MMIO_END};
 
 struct platform_data_t
     tfm_peripheral_FF_TEST_DRIVER_PARTITION_MMIO = {
         FF_TEST_DRIVER_PARTITION_MMIO_START,
-        FF_TEST_DRIVER_PARTITION_MMIO_END
-};
+        FF_TEST_DRIVER_PARTITION_MMIO_END};
 
 /* This platform implementation uses PSA_TEST_SCRATCH_AREA for
  * storing the state between resets, but the FF_TEST_NVMEM_REGIONS
  * definitons are still needed for tests to compile.
  */
-#define FF_TEST_NVMEM_REGION_START  0xFFFFFFFF
-#define FF_TEST_NVMEM_REGION_END    0xFFFFFFFF
+#define FF_TEST_NVMEM_REGION_START 0xFFFFFFFF
+#define FF_TEST_NVMEM_REGION_END 0xFFFFFFFF
 struct platform_data_t
     tfm_peripheral_FF_TEST_NVMEM_REGION = {
         FF_TEST_NVMEM_REGION_START,
-        FF_TEST_NVMEM_REGION_END
-};
+        FF_TEST_NVMEM_REGION_END};
 #endif /* PSA_API_TEST_IPC */
 
 /* The section names come from the scatter file */
@@ -76,8 +73,9 @@ REGION_DECLARE(Load$$LR$$, LR_SECONDARY_PARTITION, $$Base);
 
 const struct memory_region_limits memory_regions = {
     .non_secure_code_start =
-        (uint32_t)&REGION_NAME(Load$$LR$$, LR_NS_PARTITION, $$Base) +
-        BL2_HEADER_SIZE,
+        (uint32_t)&REGION_NAME(Load$$LR$$, LR_NS_PARTITION, $$Base) /* +
+         BL2_HEADER_SIZE*/
+    ,
 
     .non_secure_partition_base =
         (uint32_t)&REGION_NAME(Load$$LR$$, LR_NS_PARTITION, $$Base),
@@ -113,10 +111,7 @@ enum tfm_plat_err_t enable_fault_handlers(void)
     NVIC_SetPriority(SecureFault_IRQn, 0);
 
     /* Enables BUS, MEM, USG and Secure faults */
-    SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk
-                  | SCB_SHCSR_BUSFAULTENA_Msk
-                  | SCB_SHCSR_MEMFAULTENA_Msk
-                  | SCB_SHCSR_SECUREFAULTENA_Msk;
+    SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk | SCB_SHCSR_SECUREFAULTENA_Msk;
     return TFM_PLAT_ERR_SUCCESS;
 }
 
@@ -154,10 +149,8 @@ enum tfm_plat_err_t init_debug(void)
 #error "No debug authentication setting is provided."
 #endif
     /* Lock access to APPROTECT, SECUREAPPROTECT */
-    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked <<
-        CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
-    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked <<
-        CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
+    NRF_CTRLAP->APPROTECT.LOCK = CTRLAPPERI_APPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_APPROTECT_LOCK_LOCK_Msk;
+    NRF_CTRLAP->SECUREAPPROTECT.LOCK = CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Locked << CTRLAPPERI_SECUREAPPROTECT_LOCK_LOCK_Msk;
 
     return TFM_PLAT_ERR_SUCCESS;
 }
@@ -166,8 +159,10 @@ enum tfm_plat_err_t init_debug(void)
 enum tfm_plat_err_t nvic_interrupt_target_state_cfg(void)
 {
     /* Target every interrupt to NS; unimplemented interrupts will be Write-Ignored */
-    for (uint8_t i = 0; i < sizeof(NVIC->ITNS) / sizeof(NVIC->ITNS[0]); i++) {
-        NVIC->ITNS[i] = 0xFFFFFFFF;
+    for (uint8_t i = 0; i < sizeof(NVIC->ITNS) / sizeof(NVIC->ITNS[0]); i++)
+    {
+        printf(" LOOP : %d \n", i);
+        NVIC->ITNS[i] = /*0x50000*/ 0xFFFFFFFF;
     }
 
     /* Make sure that the SPU is targeted to S state */
@@ -204,6 +199,21 @@ void sau_and_idau_cfg(void)
     SAU->CTRL |= SAU_CTRL_ALLNS_Msk;
 }
 
+uint32_t tfm_spm_hal_get_ns_VTOR(void)
+{
+    return memory_regions.non_secure_code_start;
+}
+
+uint32_t tfm_spm_hal_get_ns_MSP(void)
+{
+    return *((uint32_t *)memory_regions.non_secure_code_start);
+}
+
+uint32_t tfm_spm_hal_get_ns_entry_point(void)
+{
+    return *((const uint32_t *)(memory_regions.non_secure_code_start + 4));
+}
+
 enum tfm_plat_err_t spu_init_cfg(void)
 {
     /*
@@ -219,27 +229,31 @@ enum tfm_plat_err_t spu_init_cfg(void)
      */
     spu_regions_reset_all_secure();
 
+    // printf("First: %p \n Second %p \n Third %p \n ",
+    //        memory_regions.non_secure_code_start,
+    //        *((uint32_t *)memory_regions.non_secure_code_start),
+    //        *((const uint32_t *)(memory_regions.non_secure_code_start + 4U)));
 
-    printf("Flash non secure start: %p, end: %p \n",memory_regions.non_secure_partition_base,
-        memory_regions.non_secure_partition_limit);
-    printf("sram non secure start: %p, end: %p \n",NS_DATA_START,
-        NS_DATA_LIMIT);
-    printf("nsc non secure start: %p, end: %p \n",memory_regions.veneer_base,
-        memory_regions.veneer_limit - 1);
+    // printf("Flash non secure start: %p, end: %p \n", memory_regions.non_secure_partition_base,
+    //        memory_regions.non_secure_partition_limit);
+    // printf("sram non secure start: %p, end: %p \n", NS_DATA_START,
+    //        NS_DATA_LIMIT);
+    // printf("nsc non secure start: %p, end: %p \n", memory_regions.veneer_base,
+    //        memory_regions.veneer_limit - 1);
     /* Configures SPU Code and Data regions to be non-secure */
     spu_regions_flash_config_non_secure(memory_regions.non_secure_partition_base,
-        memory_regions.non_secure_partition_limit);
+                                        memory_regions.non_secure_partition_limit);
     spu_regions_sram_config_non_secure(NS_DATA_START, NS_DATA_LIMIT);
 
     /* Configures veneers region to be non-secure callable */
     spu_regions_flash_config_non_secure_callable(memory_regions.veneer_base,
-        memory_regions.veneer_limit - 1);
+                                                 memory_regions.veneer_limit - 1);
 
 #ifdef BL2
     printf("BL1 is defined \n");
     /* Secondary image partition */
     spu_regions_flash_config_non_secure(memory_regions.secondary_partition_base,
-        memory_regions.secondary_partition_limit);
+                                        memory_regions.secondary_partition_limit);
 #endif /* BL2 */
 
     return TFM_PLAT_ERR_SUCCESS;
@@ -329,4 +343,51 @@ void spu_periph_configure_to_secure(uint32_t periph_num)
 void spu_periph_configure_to_non_secure(uint32_t periph_num)
 {
     spu_peripheral_config_non_secure(periph_num, true);
+}
+
+/*Test functions*/
+
+#define TFM_STACK_SEALED_SIZE 8
+#define TFM_STACK_SEAL_VALUE 0xFEF5EDA5
+
+#ifndef NDEBUG
+#define TFM_CORE_ASSERT(cond) \
+    do                        \
+    {                         \
+        if (!(cond))          \
+        {                     \
+            while (1)         \
+                ;             \
+        }                     \
+    } while (0)
+#else
+#define TFM_CORE_ASSERT(cond)
+#endif
+
+__STATIC_INLINE void tfm_arch_init_secure_msp(uint32_t msplim)
+{
+    uint32_t mstk_adr = __get_MSP();
+
+    /*
+     * Seal the main stack and update MSP to point below the stack seal.
+     * Set MSPLIM. As the initial 'main()' code is running under privileged PSP
+     * manipulating MSP works here.
+     */
+    TFM_CORE_ASSERT((mstk_adr & 0x7) == 0);
+    mstk_adr -= TFM_STACK_SEALED_SIZE;
+
+    *((uint32_t *)mstk_adr) = TFM_STACK_SEAL_VALUE;
+    *((uint32_t *)(mstk_adr + 4)) = TFM_STACK_SEAL_VALUE;
+
+    __set_MSP(mstk_adr);
+    __set_MSPLIM(msplim);
+}
+
+void testFunc()
+{
+    REGION_DECLARE(Image$$, ARM_LIB_STACK, $$ZI$$Base);
+
+    tfm_arch_init_secure_msp((uint32_t)&REGION_NAME(Image$$,
+                                                    ARM_LIB_STACK,
+                                                    $$ZI$$Base));
 }
