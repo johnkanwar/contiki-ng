@@ -2,7 +2,7 @@ CONTIKI_PROJECT = example_ns #hello-world-test
 all: $(CONTIKI_PROJECT)
 
 #$(info    building the normal makefile)
-MODULES += os/services/shell
+#MODULES += os/services/shell
 #MODULES += subdir
 #MODULES += os/services/test_module
 #MODULES += os/services/simple-energest
