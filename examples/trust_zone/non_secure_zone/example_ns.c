@@ -7,6 +7,9 @@
 #include "contiki.h"
 #include <stdio.h> /* For printf() */
 
+  #include "dev/leds.h"
+#include "dev/etc/rgb-led/rgb-led.h"
+
 static int non_secure_variable = 80;
 const static int non_secure_variable1 = 81;
 static int non_secure_variable3;
@@ -21,23 +24,28 @@ PROCESS_THREAD(example_ns_process, ev, data)
 {
   non_secure_variable3 = 83;
 
+    // leds_single_on(3);
+
   PROCESS_BEGIN();
 
+
+
   printf("NON SECURE WORLD\n");
+  leds_single_on(3);
 
   static int non_secure_variable2 = 82;
 
-  printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable, &non_secure_variable);
-  printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable1, &non_secure_variable1);
-  printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable2, &non_secure_variable2);
-  printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable3, &non_secure_variable3);
-  printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable4, &non_secure_variable4);
+  // printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable, &non_secure_variable);
+  // printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable1, &non_secure_variable1);
+  // printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable2, &non_secure_variable2);
+  // printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable3, &non_secure_variable3);
+  // printf("non_secure_variable value: %d, memory address: %p \n", non_secure_variable4, &non_secure_variable4);
 
-  while (1){
-    // PROCESS_YIELD();
+  // while (1){
+  //   // PROCESS_YIELD();
 
-    printf("Hello, world non secure\n");
-  }
+  //   printf("Hello, world non secure\n");
+  // }
 
   /* Wait for the periodic timer to expire and then restart the timer. */
   // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
