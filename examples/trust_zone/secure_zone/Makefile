@@ -9,6 +9,7 @@ all: $(CONTIKI_PROJECT)
 #PROJECT_SOURCEFILES += spm.c
 PROJECT_SOURCEFILES += spu.c
 PROJECT_SOURCEFILES += target_cfg.c
+PROJECT_SOURCEFILES += SPM_lite.c
 #PROJECT_SOURCEFILES += tfm_includes/tfm_hal_isolation.c
 #PROJECT_SOURCEFILES += spm_func.c
 #PROJECT_SOURCEFILES += boot_hal.c
@@ -27,6 +28,9 @@ CFLAGS += --specs=nosys.specs
 CFLAGS += -mcmse
 CFLAGS += -mthumb
 CLAGSS += -c
+
+
+
 #CLAGSS += -Ofast
 #LDFLAGS += -o example_ns.elf nsclib.o
 #LDFLAGS += -o example_ns.elf veneer_table.o
