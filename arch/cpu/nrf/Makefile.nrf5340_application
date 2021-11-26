@@ -6,11 +6,32 @@ include $(CONTIKI)/examples/trust_zone/mdk/Makefile.def
 
 #Override submodule NRFX
 CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/
+#CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/SPM
+#CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/TFM
 
-ifeq ($(secure_build),1)
-    LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application.ld
+
+CC.1 := gcc
+CC.2 := clang
+CC := $(or ${CC.${secure_build}},mipsel-linux-gcc)
+$(info "Using ${CC}")
+
+
+ifeq ($(example_1),1)
+    ifeq ($(secure_build),1)
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_SPM.ld
+    else ifeq ($(secure_build),2)
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_nrf_bl2.ld
+    else
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my_SPM.ld
+    endif
 else
-    LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my.ld
+    ifeq ($(secure_build),1)
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_TFM.ld
+    else ifeq ($(secure_build),2)
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_nrf_bl2.ld
+    else
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my_TFM.ld
+    endif
 endif
 
 #Original
@@ -19,10 +40,22 @@ endif
 CFLAGS += -DNRF5340_XXAA_APPLICATION
 
 #Override submodule NRFX
-ifeq ($(secure_build),1)
-    NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application.s
+ifeq ($(example_1),1)
+    ifeq ($(secure_build),1)
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_SPM.s
+    else ifeq ($(secure_build),2)
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/startup_nrf5340_bl2.s
+    else
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_ns_my_SPM.s
+    endif
 else
-    NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_ns_my.s
+    ifeq ($(secure_build),1)
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_TFM.s
+    else ifeq ($(secure_build),2)
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/startup_nrf5340_bl2.s
+    else
+        NRFX_ASM_SRCS += $(CONTIKI)/examples/trust_zone/mdk/gcc_startup_nrf5340_application_ns_my_TFM.s
+    endif
 endif
 
 #Original
