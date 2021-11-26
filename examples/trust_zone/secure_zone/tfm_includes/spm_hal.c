@@ -107,7 +107,7 @@ uint32_t tfm_spm_hal_get_ns_MSP(void)
 
 uint32_t tfm_spm_hal_get_ns_entry_point(void)
 {
-    return *((const uint32_t *)(memory_regions.non_secure_code_start + 4));
+    return *((const uint32_t *)(memory_regions.non_secure_code_start + 4U));
 }
 
 enum tfm_plat_err_t tfm_spm_hal_set_secure_irq_priority(IRQn_Type irq_line)
