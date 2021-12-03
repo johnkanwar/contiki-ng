@@ -97,7 +97,7 @@ void print_information(void)
 void spu_regions_reset_all_secure(void)
 {
     // printf("Flash region \t\t Domain \t\t Permissions\n");
-    for (size_t i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS / 2; i++)
+    for (size_t i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
     {
         nrf_spu_flashregion_set(NRF_SPU, i,
                                 1 /* Secure */,
@@ -107,7 +107,7 @@ void spu_regions_reset_all_secure(void)
         arr_flash[i] = 1;
     }
     // printf("\n SRAM \n");
-    for (size_t i = 0; i < NUM_SRAM_SECURE_ATTRIBUTION_REGIONS * 0; i++)
+    for (size_t i = 0; i < NUM_SRAM_SECURE_ATTRIBUTION_REGIONS; i++)
     {
         nrf_spu_ramregion_set(NRF_SPU, i,
                               1 /* Secure */,
