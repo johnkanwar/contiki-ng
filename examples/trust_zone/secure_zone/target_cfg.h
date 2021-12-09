@@ -105,6 +105,10 @@ void spu_clear_irq(void);
  */
 void sau_and_idau_cfg(void);
 
+/**
+ * \brief Configure rom, ram and peripherials
+ */
+void configuration_Z(void);
 
 /**
  * \brief Get non-secure vector table.
