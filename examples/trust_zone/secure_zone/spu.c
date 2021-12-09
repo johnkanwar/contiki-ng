@@ -76,23 +76,23 @@ void spu_clear_events(void)
 }
 
 
-void print_information(void)
-{
-    printf("Flash region \t\t Domain \t\t Permissions\n");
-    for (unsigned long i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
-    {
-        printf("%02u 0x%05x 0x%05x \t", i, 32 * ((i) << 10), 32 * ((i + 1) << 10));
-        printf("%s", arr_flash[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
-        printf("\n");
-    }
-    printf("\n SRAM \n");
-    for (int i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
-    {
-        printf("%02u 0x%05x 0x%05x \t", i, 8 * ((i) << 10), 8 * ((i + 1) << 10));
-        printf("%s", arr_ram[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
-        printf("\n");
-    }
-}
+// void print_information(void)
+// {
+//     printf("Flash region \t\t Domain \t\t Permissions\n");
+//     for (unsigned long i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
+//     {
+//         printf("%02u 0x%05x 0x%05x \t", i, 32 * ((i) << 10), 32 * ((i + 1) << 10));
+//         printf("%s", arr_flash[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
+//         printf("\n");
+//     }
+//     printf("\n SRAM \n");
+//     for (int i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
+//     {
+//         printf("%02u 0x%05x 0x%05x \t", i, 8 * ((i) << 10), 8 * ((i + 1) << 10));
+//         printf("%s", arr_ram[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
+//         printf("\n");
+//     }
+// }
 
 void spu_regions_reset_all_secure(void)
 {
@@ -404,10 +404,5 @@ void zephyr_config_test(void)
     /*Hard coded linker script addresses*/
     spu_regions_flash_config_non_secure(0x50000,0x7ffff);
     spu_regions_sram_config_non_secure(0x20040000,0x2007ffff);
-    // spu_regions_flash_config_id(0,19,1);
-    // spu_regions_flash_config_id(20,31,0);
-    // spu_regions_sram_config_non_secure_all();
-
-    // spu_peripheral_config_secure()
 
 }
