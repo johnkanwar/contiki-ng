@@ -1,3 +1,5 @@
+secure_build = 0
+
 CONTIKI_PROJECT = example_ns #hello-world-test
 all: $(CONTIKI_PROJECT)
 

@@ -1,3 +1,5 @@
+secure_build = 1
+
 CONTIKI_PROJECT = example_s
 all: $(CONTIKI_PROJECT)
 
@@ -28,8 +30,6 @@ CFLAGS += --specs=nosys.specs
 CFLAGS += -mcmse
 CFLAGS += -mthumb
 CLAGSS += -c
-
-
 
 #CLAGSS += -Ofast
 #LDFLAGS += -o example_ns.elf nsclib.o
