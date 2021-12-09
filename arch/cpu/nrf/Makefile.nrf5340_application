@@ -1,10 +1,11 @@
 include $(CONTIKI_CPU)/Makefile.nrfx  
-include $(CONTIKI)/examples/trust_zone/mdk/Makefile.def
+include $(CONTIKI)/examples/trust_zone/Makefile
 
 #LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application.ld
 
 
 #Override submodule NRFX
+#Path to find the different linker and A scripts. 
 CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/
 #CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/SPM
 #CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/TFM
