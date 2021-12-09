@@ -6,8 +6,8 @@ And MDK folder that contains the linker scripts, startup files.
 
 
 ## ~ How to build ~
-Run "make tz" to build, merge and upload.
-Run "make rm" to remove the secure and non-secure builds
+Run "make tz" to build, merge and upload. <br />
+Run "make rm" to remove the secure and non-secure builds.
 
 
 ## ~ Secure example ~
