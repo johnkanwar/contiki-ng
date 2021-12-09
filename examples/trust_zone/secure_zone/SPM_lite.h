@@ -35,5 +35,6 @@ void tz_nonsecure_system_reset_req_block(int block);
 void tz_sau_configure(int enable, int allns);
 void spm_configure_ns(const tz_nonsecure_setup_conf_t *spm_ns_conf);
 uint32_t tz_sau_number_of_regions_get(void);
+void tz_nonsecure_state_setup(const tz_nonsecure_setup_conf_t *p_ns_conf);
 
 //void spm_jump(void);
