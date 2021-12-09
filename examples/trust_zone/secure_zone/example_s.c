@@ -54,13 +54,13 @@ void configure_ns_code(void)
   /* Get the address of non-secure code entry point to jump there */
   unsigned int entry_ptr = tfm_spm_hal_get_ns_entry_point();
 
-  printf("vector_table: %p \n MSP %p \n entry point %p \n ",
+  printf("vector_table: %ld \n MSP %d \n entry point %d \n ",
          SCB_NS->VTOR, ns_msp, entry_ptr);
 
   // ns_entry = (nsfptr_t)(*((uint32_t *)((tfm_spm_hal_get_ns_VTOR()) + 4U)));
   // TZ_NONSECURE_FUNC_PTR_DECLARE(ns_entry);
-  // ns_entry = TZ_NONSECURE_FUNC_PTR_CREATE(entry_ptr);
-  ns_entry = (nsfptr_t)cmse_nsfptr_create(entry_ptr);
+  ns_entry = TZ_NONSECURE_FUNC_PTR_CREATE(entry_ptr);
+  // ns_entry = (nsfptr_t)cmse_nsfptr_create(entry_ptr);
 }
 
 void core_init(void)
@@ -94,30 +94,6 @@ void core_init(void)
   TZ_SAU_Enable();
 }
 
-/*START Sparrow test*/
-void __set_MSPA(uint32_t topOfMainStack) __attribute__((naked));
-void __set_MSPA(uint32_t topOfMainStack)
-{
-  __asm volatile("MSR msp, %0\n\t"
-                 "BX lr \n\t"
-                 :
-                 : "r"(topOfMainStack));
-}
-static void boot_image(void)
-{
-  typedef void (*entry_point_t)(void);
-
-  entry_point_t entry_point =
-      (entry_point_t)(*(uint32_t *)(0x00050000 + 4U));
-  uint32_t stack = *(uint32_t *)(0x00050000);
-  *((volatile uint32_t *)(0xE000ED08)) = 0x00050000; // Vector table
-  __set_MSPA(stack);
-
-  entry_point();
-}
-/*END Sparrow test*/
-#define cmse_is_nsfptr(p) (!((__INTPTR_TYPE__)(p)&1))
-
 
 /*---------------------------------------------------------------------------*/
 PROCESS(example_s_process, "Example s process");
@@ -136,7 +112,7 @@ PROCESS_THREAD(example_s_process, ev, data)
   
   /*Zephyr SPM example*/
   if (SPM_EXAMPLE){
-    printf("Running example \n", SPM_EXAMPLE);
+    printf("Running example SPM_EXAMPLE\n");
 
     if (enable_fault_handlers() == TFM_PLAT_ERR_SUCCESS){
       printf("Succsess\n");
@@ -148,11 +124,11 @@ PROCESS_THREAD(example_s_process, ev, data)
       set non-secure parition non-secure for both flash and RAM
       Set all peripherials non-secure*/
 
+    TZ_SAU_Disable();
     configuration_Z();
-
-    unsigned int *vtor_ns = (unsigned int)0x50000;
-
-    // vtor_ns[0] = 0x20042840;/*0x200427a0*/;
+    TZ_SAU_Enable();
+    // print_information();
+    unsigned int *vtor_ns = (unsigned int*)0x50000;
     printf("NS IMAGE AT 0x%x \n", (unsigned int)vtor_ns);
     printf("NS MSP AT 0x%x \n", vtor_ns[0]);
     printf("NS reset vector AT 0x%x \n", vtor_ns[1]);
@@ -160,7 +136,6 @@ PROCESS_THREAD(example_s_process, ev, data)
     /*Things that isn't necessary but perhaps*/
     /*Configure non-secure stack*/
     tz_nonsecure_setup_conf_t spm_ns_conf = {
-
         .vtor_ns = (unsigned int)vtor_ns,
         .msp_ns = vtor_ns[0],
         .psp_ns = 0,
@@ -169,11 +144,10 @@ PROCESS_THREAD(example_s_process, ev, data)
 
     };
 
-    tz_nonsecure_state_setup(&spm_ns_conf);
+    tz_nonsecure_state_setup(&spm_ns_conf); /*Implicit declaration of func*/
     tz_nonsecure_exception_prio_config(1);
-
-    // tz_nbanked_exception_target_state_set(0);
-    // tx_nonsecure_system_reset_req_block(IS_ENABLED)
+    tz_nbanked_exception_target_state_set(0);
+    // tz_nonsecure_system_reset_req_block(true);
 
     sau_and_idau_cfg();
 
@@ -187,6 +161,7 @@ PROCESS_THREAD(example_s_process, ev, data)
       __DSB();
       __ISB();
       reset_ns();
+      //  printf("This shouldn't print\n");
     }else{
       printf("ERROR: WRONG POINTER TYPE\n");
     }
@@ -196,7 +171,7 @@ PROCESS_THREAD(example_s_process, ev, data)
   /* More TF-M like configuration */
   /* Need to use the TF-M linker and startup scripts*/
   if (TFM_EXAMPLE){
-    printf("Running example \n", TFM_EXAMPLE);
+    printf("Running example TFM_EXAMPLE \n");
     
     /* Allow SPU to have precedence over (non-existing) ARMv8-M SAU */
     sau_and_idau_cfg();
@@ -206,7 +181,7 @@ PROCESS_THREAD(example_s_process, ev, data)
     spu_init_cfg();
 
     /* Print debug information */
-    print_information();
+    // print_information();
     /*spu_periph_init_cfg() sets all perhiperals to non-secure and allocates GPIOS to non-secure domain*/
     spu_periph_init_cfg();
 
