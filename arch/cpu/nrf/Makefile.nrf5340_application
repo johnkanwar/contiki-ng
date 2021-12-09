@@ -11,18 +11,20 @@ CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/
 #CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/TFM
 
 
-CC.1 := gcc
-CC.2 := clang
-CC := $(or ${CC.${secure_build}},mipsel-linux-gcc)
-$(info "Using ${CC}")
+#CC.1 := gcc
+#CC.2 := clang
+#CC := $(or ${CC.${secure_build}},mipsel-linux-gcc)
+#$(info "Using ${CC}")
 
 
 ifeq ($(example_1),1)
     ifeq ($(secure_build),1)
+        $(info "SECUREBUILD ${secure_build}")
         LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_SPM.ld
     else ifeq ($(secure_build),2)
         LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_nrf_bl2.ld
     else
+        $(info "NONSECUREBUILD ${secure_build}")
         LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my_SPM.ld
     endif
 else
