@@ -232,11 +232,11 @@ enum tfm_plat_err_t spu_init_cfg(void)
     printf("Set everything secure\n");
     spu_regions_reset_all_secure();
 
-    printf("Flash non secure start: %p, end: %p \n", memory_regions.non_secure_partition_base,
+    printf("Flash non secure start: %ld, end: %ld \n", memory_regions.non_secure_partition_base,
            memory_regions.non_secure_partition_limit);
-    printf("sram non secure start: %p, end: %p \n", NS_DATA_START,
+    printf("sram non secure start: %d, end: %d \n", NS_DATA_START,
            NS_DATA_LIMIT);
-    printf("nsc non secure start: %p, end: %p \n", memory_regions.veneer_base,
+    printf("nsc non secure start: %ld, end: %ld \n", memory_regions.veneer_base,
            memory_regions.veneer_limit - 1);
     /* Configures SPU Code and Data regions to be non-secure */
 
@@ -265,6 +265,7 @@ enum tfm_plat_err_t spu_init_cfg(void)
 
 enum tfm_plat_err_t spu_periph_init_cfg(void)
 {
+    // printf("PERIPHERIAL START \n");
     /* Peripheral configuration */
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_FPU));
     spu_peripheral_config_non_secure((uint32_t)NRF_FPU, false);
@@ -274,6 +275,7 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_CLOCK));
     spu_peripheral_config_non_secure((uint32_t)NRF_CLOCK, false); /*necesary*/
+    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_SPIM0));
     // spu_peripheral_config_non_secure((uint32_t)NRF_SPIM0, false);
 
 #ifndef SECURE_UART1
@@ -313,8 +315,8 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_DPPIC));
     spu_peripheral_config_non_secure((uint32_t)NRF_DPPIC, false);
 
-    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT0));
-    spu_peripheral_config_non_secure((uint32_t)NRF_WDT0, false);
+    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT0));
+    // spu_peripheral_config_non_secure((uint32_t)NRF_WDT0, false);
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT1));
     spu_peripheral_config_non_secure((uint32_t)NRF_WDT1, false);
@@ -400,11 +402,16 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_VMC));
     spu_peripheral_config_non_secure((uint32_t)NRF_VMC, false);
 
+    
+    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE1));
+    spu_peripheral_config_non_secure((uint32_t)NRF_UARTE1, false);
 
-    /*Here we should have the pheripheral block thing */
-    // #define PERIPH(name,reg,config){ name, .id = NRFX_PERIPHERAL_ID_GET(reg), IS_ENABLED(config) }
+    /*This one is a skip as it is secure explicit*/
+    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE2));
+    // spu_peripheral_config_non_secure((uint32_t)NRF_UARTE2, false);
 
-    // PERIPH("NRF_IPC", NRF_IPC_S, CONFIG_SPM_NRF_IPC_NS);
+    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TWIM2));
+    spu_peripheral_config_non_secure((uint32_t)NRF_TWIM2, false);
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_IPC_S));
     spu_peripheral_config_non_secure((uint32_t)NRF_IPC_S, false);
@@ -454,6 +461,7 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
      */
     NRF_CACHE->ENABLE = CACHE_ENABLE_ENABLE_Enabled;
 
+    // printf("PERIPHERIAL STOP \n");
     return TFM_PLAT_ERR_SUCCESS;
 }
 
@@ -478,111 +486,6 @@ void spu_periph_config_uarte(void)
 
 void configuration_Z(void)
 {
-
-    
     zephyr_config_test();
-    spu_periph_init_cfg();    
-
-    /*peripherials configurations*/
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_P0));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_P0, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_CLOCK));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_CLOCK, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_RTC0));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_RTC0, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_RTC1));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_RTC1, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_NVMC));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_NVMC, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE1));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_UARTE1, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_UARTE2, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TWIM2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_TWIM2, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_SPIM3));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_SPIM3, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TIMER0));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_TIMER0, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TIMER1));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_TIMER1, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TIMER2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_TIMER2, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_SAADC));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_SAADC, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_PWM1));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_PWM1, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_PWM2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_PWM2, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_PWM3));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_PWM3, false);
-
-    // // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT));
-    // // spu_peripheral_config_non_secure((uint32_t)NRF_WDT, false);
-
-    // /* ~ ~ ~ ~ */
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_IPC));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_IPC, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_VMC));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_VMC, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_FPU));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_FPU, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_EGU1));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_EGU1, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_EGU2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_EGU2, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_DPPIC));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_DPPIC, false);
-
-    // /*Little bit different*/
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_GPIOTE1_NS));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_GPIOTE1_NS, false);
-
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_REGULATORS));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_REGULATORS, false);
-
-
-    // /* ~ ~ ~ ~ ~ */
-    //     /* DPPI channel configuration */
-    // spu_dppi_config_non_secure(false);
-
-
-
-    // /* GPIO pin configuration (P0 and P1 ports) */
-    // spu_gpio_config_non_secure(0, false);
-    // spu_gpio_config_non_secure(1, false);
-
-    // /* Configure properly the XL1 and XL2 pins so that the low-frequency crystal
-    //  * oscillator (LFXO) can be used.
-    //  * This configuration can be done only from secure code, as otherwise those
-    //  * register fields are not accessible.  That's why it is placed here.
-    //  */
-    //  nrf_gpio_pin_mcu_select(PIN_XL1, NRF_GPIO_PIN_MCUSEL_PERIPHERAL);
-    //  nrf_gpio_pin_mcu_select(PIN_XL2, NRF_GPIO_PIN_MCUSEL_PERIPHERAL);
-
-    // /* Enable the instruction and data cache (this can be done only from secure
-    //  * code; that's why it is placed here).
-    //  */
-
-    //  NRF_CACHE->ENABLE = CACHE_ENABLE_ENABLE_Enabled;
+    spu_periph_init_cfg();
 }
