@@ -91,6 +91,11 @@ void spu_periph_configure_to_secure(uint32_t periph_num);
 void spu_periph_configure_to_non_secure(uint32_t periph_num);
 
 /**
+ * \brief Configures the NRF_UARTE0 non-secure
+ */
+void spu_periph_config_uarte(void);
+
+/**
  * \brief Clears SPU interrupt.
  */
 void spu_clear_irq(void);
