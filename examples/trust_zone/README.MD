@@ -6,8 +6,14 @@ And MDK folder that contains the linker scripts, startup files.
 
 
 ## ~ How to build ~
-Run "make tz" to build, merge and upload. <br />
-Run "make rm" to remove the secure and non-secure builds.
+Run "make tz_build" to build secure, non-secure and merge the hex files. <br />
+Run "make rm" to remove the secure and non-secure builds. <br />
+
+To flash to the nRF5340 cd into secure_zone and run : <br />
+sudo make TARGET=nrf BOARD=nrf5340/dk/application example_s.upload PORT=/dev/<PORT>
+
+To login the port run: <br />
+make TARGET=nrf BOARD=nrf5340/dk/application login PORT=/dev/<PORT>
 
 
 ## ~ Secure example ~
