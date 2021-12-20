@@ -45,7 +45,7 @@ Some of the things required to set up GDB may already be installed. For example 
     ```sh
     target remote localhost:2331
     ```
-
+It can be good to turn off the uarte_write loop, so it is possible to read other things. 
 
 ## ~ Secure example ~
 The secure example contains two different examples, one that follow configuration like Zehpyr's SPM and another one that uses TF-M in order to configure. 
