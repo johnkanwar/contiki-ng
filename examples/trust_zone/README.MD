@@ -15,24 +15,38 @@ sudo make TARGET=nrf BOARD=nrf5340/dk/application example_s.upload PORT=/dev/<PO
 To login the port run: <br />
 make TARGET=nrf BOARD=nrf5340/dk/application login PORT=/dev/<PORT>
 
+## ~ GDB setup for nRF (Linux and Mac) ~
+Some of the things required to set up GDB may already be installed. For example nRF Command Line (nrfjprog), SEGGER J-Link, GNU Arm Embedded toolchain etc. These are set by following [contiki-nrf](https://github.com/contiki-ng/contiki-ng/wiki/Platform-nrf52840)
+ 
+1. Install gdb-multiarch. (Which should already be installed with the GNU Arm embedded toolchain)
+    ```sh
+    sudo apt-get update -y
+    ```
+    ```sh
+    sudo apt-get install gdb-multiarch
+    ```
+2. Compile the builds with optimization flags to create debug symbols. -g
+  
+3. Open a JLinkGDBServer to allow connections from the GDB client (In this case do we target the nRF5340).
+    ```sh
+    JLinkGDBServer -device nrf5340_xxaa -if swd -port 2331
+    ```
+    -"device" nrfxx_xxaa (What type of nrf version)                                 
+    -"if" specifies the debug interface                                            
+    -"port" which port to use. 
+
+4. In another terminal start gdb-multiarch  
+    ```sh
+    gdb-multiarch example.FILE
+    ```
+    -"file" could for example be .ELF or .out etc. 
+    
+5. In GDB, connect to the GDB server  
+    ```sh
+    target remote localhost:2331
+    ```
+
 
 ## ~ Secure example ~
 The secure example contains two different examples, one that follow configuration like Zehpyr's SPM and another one that uses TF-M in order to configure. 
 
-
-## ~ Focus ~
-The main focus is to initialize the data in the non_secure build when we are jumping from non-secure to secure. 
-
-## ~ Problem ~
-When jumping from secure to non-secure does it freze right after the jump is called. 
-
-
-## ~ Things tested ~
-
-1. Tested the SPM code that Zephyr used for jumping. (That they used Before switching to TF-M.) 
-2. Tested using Sparrows boot_image functions to switch and initalize non-secure build.
-3. Tested using the TF-M functions for configuration and jumping.
-4. Tested the original linker script and gcc_starup files. 
-5. Changed the linker scripts and gcc_startup files to a more TF-M like way.
-6. Setuped a Zephyr project from a SDK and ran SPM project, closley followed how they configured and did the same.
-7. 
