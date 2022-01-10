@@ -89,14 +89,11 @@ For example, building for nRF52840 on port 0, would look like this:
 make TARGET=nrf52840 BOARD=dongle && sudo make TARGET=nrf52840 BOARD=dongle specksense.dfu-upload PORT=/dev/ttyACM0 && make TARGET=nrf52840 BOARD=dongle login PORT=/dev/ttyACM0
 ```
 
-In order to detect the different attacks is it necessary to profile them. In order to do that:
+In order to detect the different attacks is it necessary to profile them.
 
-- Change the PROFILING in the Makefile to 1
-- Setup the hardware physically
-- Run the different jamming attacks
-- Read the values that are profiled
-- Apply those values as pre-determined thresholds
-
+## Makefile
+In the makefile is it possible to set the different thresholds.
+The symbol J_D determines if the firmware is going to detect intentional interference or unintentional interference.
 
 ## PROCESS_ID
 PROCESS_ID 1 activated runs SpeckSense++ normally. 
