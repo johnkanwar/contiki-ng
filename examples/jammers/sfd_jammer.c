@@ -41,7 +41,7 @@ void perform_rtimer_callback()
 	NRF_RADIO->TASKS_TXEN = 0U; /*Disable TX-mode*/
 	NRF_RADIO->TASKS_STOP = 1U; /*Stop radio*/
 
-	printf("Rtimer callback called \n");
+//	printf("Rtimer callback called \n");
 
 	/*Re-Enable the interrupt handler*/
 	NRF_RADIO->INTENSET |= (1 << 14U);
@@ -56,7 +56,7 @@ void perform_rtimer_callback()
 
 	NRF_RADIO->TASKS_RXEN = 1U; /*Enable RX-mode*/
 	NRF_RADIO->TASKS_START = 1U; /*Start radio*/
-	printf("END of rtimer func\n");
+//	printf("END of rtimer func\n");
 }
 /*---------------------------------------------------------------------------*/
 
@@ -71,8 +71,8 @@ void RADIO_IRQHandler(void)
 		NRF_RADIO->TASKS_START = 1U;	   /*Start radio*/
 
 		amount_of_jams++;
-		printf("Amount of jams %d \n", amount_of_jams);
-		printf("timeout_rtimer: %ld \n", timeout_rtimer);
+//		printf("Amount of jams %d \n", amount_of_jams);
+//		printf("timeout_rtimer: %ld \n", timeout_rtimer);
 		rtimer_set(&rtimer_timer, RTIMER_NOW() + timeout_rtimer, 10, perform_rtimer_callback, NULL);
 	}
 }
@@ -96,6 +96,7 @@ PROCESS_THREAD(reactive_process, ev, data)
 		printf("OK! \n");
 	}
 
+	/*Enable intrrupt*/
 	NRF_RADIO->INTENSET |= (1 << 14U);
 	NRF_RADIO->INTENSET = RADIO_INTENSET_READY_Enabled << RADIO_INTENSET_READY_Pos | RADIO_INTENSET_END_Enabled << RADIO_INTENSET_END_Pos | RADIO_INTENSET_CCABUSY_Enabled << RADIO_INTENSET_CCABUSY_Pos;
 
