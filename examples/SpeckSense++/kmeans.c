@@ -208,14 +208,14 @@ void check_similarity(int profiling)
     for (int i = 0; i < prev_num_clusters_final; i++)
     {
         /*Debug*/
-        if (DEBUG_MODE)
+        if (1)
         {
             if (clusters[i].plevel >= 6)
             {
-                // printf("cluster %d : vector_duration: %d :", i, clusters[i].vector_duration);
-                // printf("plevel: ");
-                // printf("%d ", clusters[i].plevel);
-                // printf("num_vectors: %d\n", num_vectors);
+                 printf("cluster %d : vector_duration: %d :", i, clusters[i].vector_duration);
+                 printf("plevel: ");
+                 printf("%d ", clusters[i].plevel);
+                 printf("num_vectors: %d\n", num_vectors);
             }
             else
             {
@@ -251,7 +251,7 @@ void check_similarity(int profiling)
         else if (clusters[i].vector_duration >= INTERFERENCE_DURATION_MID_MIN && clusters[i].vector_duration <= INTERFERENCE_DURATION_MID_MAX && clusters[i].plevel >= INTERFERENCE_POWER_LEVEL_THRESHOLD)
         {
 
-            // printf("SUS RANDOM JAMMER\n");
+            printf("SUS RANDOM JAMMER\n");
             suspicion_vector_array[suspicion_arr_cnt] = clusters[i].vector_duration;
             suspicion_arr_cnt++;
             suspicion_level += 2;
