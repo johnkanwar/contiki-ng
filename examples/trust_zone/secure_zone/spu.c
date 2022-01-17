@@ -75,38 +75,16 @@ void spu_clear_events(void)
     nrf_spu_event_clear(NRF_SPU, NRF_SPU_EVENT_PERIPHACCERR);
 }
 
-
-// void print_information(void)
-// {
-//     printf("Flash region \t\t Domain \t\t Permissions\n");
-//     for (unsigned long i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
-//     {
-//         printf("%02u 0x%05x 0x%05x \t", i, 32 * ((i) << 10), 32 * ((i + 1) << 10));
-//         printf("%s", arr_flash[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
-//         printf("\n");
-//     }
-//     printf("\n SRAM \n");
-//     for (int i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
-//     {
-//         printf("%02u 0x%05x 0x%05x \t", i, 8 * ((i) << 10), 8 * ((i + 1) << 10));
-//         printf("%s", arr_ram[i] & 1 ? "Secure\t\t" : "Non-Secure\t");
-//         printf("\n");
-//     }
-// }
-
 void spu_regions_reset_all_secure(void)
 {
-    // printf("Flash region \t\t Domain \t\t Permissions\n");
     for (size_t i = 0; i < NUM_FLASH_SECURE_ATTRIBUTION_REGIONS; i++)
     {
         nrf_spu_flashregion_set(NRF_SPU, i,
                                 1 /* Secure */,
                                 NRF_SPU_MEM_PERM_READ | NRF_SPU_MEM_PERM_WRITE | NRF_SPU_MEM_PERM_EXECUTE,
                                 0 /* No lock */);
-        // printf("%02u 0x%05x 0x%05x \t \n",i,32 * ((i)<<10),32 * ((i+1)<<10));
         arr_flash[i] = 1;
     }
-    // printf("\n SRAM \n");
     for (size_t i = 0; i < NUM_SRAM_SECURE_ATTRIBUTION_REGIONS; i++)
     {
         nrf_spu_ramregion_set(NRF_SPU, i,
@@ -114,23 +92,6 @@ void spu_regions_reset_all_secure(void)
                               NRF_SPU_MEM_PERM_READ | NRF_SPU_MEM_PERM_WRITE | NRF_SPU_MEM_PERM_EXECUTE,
                               0 /* No lock */);
         arr_ram[i] = 1;
-        // printf("%02u 0x%05x 0x%05x \t \n",i,32 * ((i)<<10),32 * ((i+1)<<10));
-    }
-}
-
-// CHECK WHAT ADDRESSES THE IDS MAP TO
-
-void spu_regions_flash_config_id(uint32_t start_id, uint32_t last_id, int secure)
-{
-    /* Configure all flash regions between start_id and last_id */
-    for (size_t i = start_id; i <= last_id; i++)
-    {
-        nrf_spu_flashregion_set(NRF_SPU, i,
-                                secure /* Secure/Non-Secure */,
-                                NRF_SPU_MEM_PERM_READ | NRF_SPU_MEM_PERM_WRITE | NRF_SPU_MEM_PERM_EXECUTE,
-                                1 /* Lock */);
-        arr_flash[i] = secure;
-        // printf("%02u 0x%05x \t",i,32 * ((i)<<10),32 * ((i+1)<<10));
     }
 }
 
@@ -216,32 +177,6 @@ uint32_t spu_regions_flash_get_region_size(void)
     return FLASH_SECURE_ATTRIBUTION_REGION_SIZE;
 }
 
-void spu_regions_sram_config_id(uint32_t start_id, uint32_t last_id, int secure)
-{
-    /* Configure all ram regions between start_id and last_id */
-    for (size_t i = start_id; i <= last_id; i++)
-    {
-        nrf_spu_ramregion_set(NRF_SPU, i,
-                              secure /* Secure/Non-Secure */,
-                              NRF_SPU_MEM_PERM_READ | NRF_SPU_MEM_PERM_WRITE | NRF_SPU_MEM_PERM_EXECUTE,
-                              1 /* Lock */);
-        arr_ram[i] = 0;
-    }
-}
-
-void spu_regions_sram_config_non_secure_all(void)
-{
-    /* Configure all ram regions between start_id and last_id */
-    for (size_t i = 0; i <= 63; i++)
-    {
-        nrf_spu_ramregion_set(NRF_SPU, i,
-                              0 /* Non-Secure */,
-                              NRF_SPU_MEM_PERM_READ | NRF_SPU_MEM_PERM_WRITE | NRF_SPU_MEM_PERM_EXECUTE,
-                              1 /* Lock */);
-        arr_ram[i] = 0;
-    }
-}
-
 void spu_regions_sram_config_non_secure(uint32_t start_addr, uint32_t limit_addr)
 {
     /* Determine start and last ram region number */
@@ -313,11 +248,9 @@ void spu_peripheral_config_secure(uint32_t periph_base_addr, bool periph_lock)
                            periph_lock);
 }
 
-/*We want to set it non secure right ?*/
 void spu_peripheral_config_secure_all(uint32_t nr_IDs, bool periph_lock)
 {
     /* Determine peripheral ID */
-    // const uint8_t periph_id = NRFX_PERIPHERAL_ID_GET(periph_base_addr);
 
     /* ASSERT checking that this is not an explicit Non-Secure peripheral */
     for (int i = 0; i < nr_IDs; i++)
@@ -343,7 +276,7 @@ void spu_peripheral_config_secure_all(uint32_t nr_IDs, bool periph_lock)
                                    periph_lock);
         }
     }
-} /*Check how many peripheral ID there are .*/
+}
 
 void spu_peripheral_config_non_secure_all(uint32_t nr_IDs, bool periph_lock)
 {
@@ -376,7 +309,6 @@ void spu_peripheral_config_non_secure_all(uint32_t nr_IDs, bool periph_lock)
     }
 }
 
-
 void spu_peripheral_config_non_secure(uint32_t periph_base_addr, bool periph_lock)
 {
     /* Determine peripheral ID */
@@ -388,21 +320,7 @@ void spu_peripheral_config_non_secure(uint32_t periph_base_addr, bool periph_loc
                 (SPU_PERIPHID_PERM_SECUREMAPPING_Secure << SPU_PERIPHID_PERM_SECUREMAPPING_Pos));
 
     nrf_spu_peripheral_set(NRF_SPU, periph_id,
-                           0 /* Non-Secure */,
-                           0 /* Non-Secure DMA */,
-                           periph_lock);
-}
-
-/*SPM functions*/
-
-     
-void zephyr_config_test(void)
-{
-
-    /*Set everything secure but no lock*/
-    spu_regions_reset_all_secure();
-    /*Hard coded linker script addresses*/
-    spu_regions_flash_config_non_secure(0x50000,0x7ffff);
-    spu_regions_sram_config_non_secure(0x20040000,0x2007ffff);
-
+            0 /* Non-Secure */,
+            0 /* Non-Secure DMA */,
+            periph_lock);
 }

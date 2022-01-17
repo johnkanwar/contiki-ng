@@ -59,16 +59,6 @@ void spu_regions_reset_all_secure(void);
  */
 void spu_regions_flash_config_non_secure( uint32_t start_addr, uint32_t limit_addr);
 
-/* Configure the IDs specifically - Debug functions*/
-void spu_regions_flash_config_id(uint32_t start_id, uint32_t last_id, int secure);
-
-void spu_regions_sram_config_id(uint32_t start_id, uint32_t last_id, int secure);
-
-void spu_regions_sram_config_non_secure_all(void);
-
-/* Follow the configuration of Zephyr's SPM, sort of*/
-void zephyr_config_test(void);
-
 /**
  * \brief Configure SRAM memory regions as Non-Secure
  *
