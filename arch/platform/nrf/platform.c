@@ -92,9 +92,16 @@ platform_init_stage_three(void)
 {
   uint32_t reset_reason;
   /*NRF_RESET_Type*/
-  reset_reason = NRF_RESET_S->RESETREAS;
-  printf("Reset reason = 0x%08x\r\n", (unsigned int) reset_reason);
-  NRF_RESET_S->RESETREAS = 0xffffffff;
+  #if defined(NRF_TRUSTZONE_NONSECURE)
+    reset_reason = NRF_RESET_NS->RESETREAS;
+    printf("Reset reason = 0x%08x\r\n", (unsigned int) reset_reason);
+    NRF_RESET_NS->RESETREAS = 0xffffffff;
+  #else
+    reset_reason = NRF_RESET_S->RESETREAS;
+    printf("Reset reason = 0x%08x\r\n", (unsigned int) reset_reason);
+    NRF_RESET_S->RESETREAS = 0xffffffff;
+  #endif
+
   process_start(&sensors_process, NULL);
 }
 /*---------------------------------------------------------------------------*/
