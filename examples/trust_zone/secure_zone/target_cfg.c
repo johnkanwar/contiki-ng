@@ -241,8 +241,6 @@ enum tfm_plat_err_t spu_init_cfg(void)
     /* Configures SPU Code and Data regions to be non-secure */
 
     printf("Set specific things non-secure and lock \n");
-    // spu_regions_flash_config_non_secure_id(20,31);
-    // spu_regions_sram_config_non_secure_all();
 
     spu_regions_flash_config_non_secure(memory_regions.non_secure_partition_base,
                                         memory_regions.non_secure_partition_limit);
@@ -274,7 +272,7 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     spu_peripheral_config_non_secure((uint32_t)NRF_REGULATORS, false);
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_CLOCK));
-    spu_peripheral_config_non_secure((uint32_t)NRF_CLOCK, false); /*necesary*/
+    spu_peripheral_config_non_secure((uint32_t)NRF_CLOCK, true); /*necesary*/
     // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_SPIM0));
     // spu_peripheral_config_non_secure((uint32_t)NRF_SPIM0, false);
 
@@ -315,8 +313,8 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_DPPIC));
     spu_peripheral_config_non_secure((uint32_t)NRF_DPPIC, false);
 
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT0));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_WDT0, false);
+    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT0));
+    spu_peripheral_config_non_secure((uint32_t)NRF_WDT0, false);
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_WDT1));
     spu_peripheral_config_non_secure((uint32_t)NRF_WDT1, false);
@@ -407,8 +405,8 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     spu_peripheral_config_non_secure((uint32_t)NRF_UARTE1, false);
 
     /*This one is a skip as it is secure explicit*/
-    // NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE2));
-    // spu_peripheral_config_non_secure((uint32_t)NRF_UARTE2, false);
+    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE2));
+    spu_peripheral_config_non_secure((uint32_t)NRF_UARTE2, false);
 
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_TWIM2));
     spu_peripheral_config_non_secure((uint32_t)NRF_TWIM2, false);
@@ -432,9 +430,6 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
     spu_peripheral_config_non_secure((uint32_t)NRF_DPPIC_S, false);
 
 
-    NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_GPIOTE1_NS));
-    spu_peripheral_config_non_secure((uint32_t)NRF_GPIOTE1_NS, false);
-
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_REGULATORS_S));
     spu_peripheral_config_non_secure((uint32_t)NRF_REGULATORS_S, false);
 
@@ -445,8 +440,8 @@ enum tfm_plat_err_t spu_periph_init_cfg(void)
 
 
     /* GPIO pin configuration (P0 and P1 ports) */
-    spu_gpio_config_non_secure(0, false);
-    spu_gpio_config_non_secure(1, false);
+    spu_gpio_config_non_secure(0, true); //P0.00 to P0.31
+    spu_gpio_config_non_secure(1, true); //P1.00 to P1.15
 
     /* Configure properly the XL1 and XL2 pins so that the low-frequency crystal
      * oscillator (LFXO) can be used.
@@ -479,13 +474,58 @@ void spu_periph_configure_to_non_secure(uint32_t periph_num)
 void spu_periph_config_uarte(void)
 {
     NVIC_DisableIRQ(NRFX_IRQ_NUMBER_GET(NRF_UARTE0));
-    spu_peripheral_config_non_secure((uint32_t)NRF_UARTE0, false);
-
-    // irq_target_state_set(NRFX_IRQ_NUMBER_GET(NRF_UARTE0),0);
+    spu_peripheral_config_non_secure((uint32_t)NRF_UARTE0, false); 
 }
 
-void configuration_Z(void)
+void non_secure_configuration(void)
 {
-    zephyr_config_test();
+    spu_regions_reset_all_secure();
+    /*Hard coded linker script addresses*/
+    spu_regions_flash_config_non_secure(0x50000,0x7ffff); //TODO_John: Fix memory address so they are not hardcoded perhaps REGION_DECLARE
+    spu_regions_sram_config_non_secure(0x20040000,0x2007ffff); //TODO_John: Fix memory address so they are not hardcoded perhaps defines?
     spu_periph_init_cfg();
+}
+
+void configure_nonsecure_vtor_offset(uint32_t vtor_ns)
+{
+	SCB_NS->VTOR = vtor_ns;
+}
+
+void configure_nonsecure_msp(uint32_t msp_ns)
+{
+	__TZ_set_MSP_NS(msp_ns);
+}
+
+static void configure_nonsecure_psp(uint32_t psp_ns)
+{
+	__TZ_set_PSP_NS(psp_ns);
+}
+
+static void configure_nonsecure_control(uint32_t spsel_ns, uint32_t npriv_ns)
+{
+	uint32_t control_ns = __TZ_get_CONTROL_NS();
+
+	/* Only nPRIV and SPSEL bits are banked between security states. */
+	control_ns &= ~(CONTROL_SPSEL_Msk | CONTROL_nPRIV_Msk);
+
+	if (spsel_ns) {
+		control_ns |= CONTROL_SPSEL_Msk;
+	}
+	if (npriv_ns) {
+		control_ns |= CONTROL_nPRIV_Msk;
+	}
+
+	__TZ_set_CONTROL_NS(control_ns);
+}
+
+void tz_nonsecure_state_setup(const tz_nonsecure_setup_conf_t *p_ns_conf)
+{
+	configure_nonsecure_vtor_offset(p_ns_conf->vtor_ns);
+	configure_nonsecure_msp(p_ns_conf->msp_ns);
+	configure_nonsecure_psp(p_ns_conf->psp_ns);
+	/* Select which stack-pointer to use (MSP or PSP) and
+	 * the privilege level for thread mode.
+	 */
+	configure_nonsecure_control(p_ns_conf->control_ns.spsel,
+		p_ns_conf->control_ns.npriv);
 }

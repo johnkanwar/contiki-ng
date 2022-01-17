@@ -37,6 +37,26 @@
 #define TFM_DRIVER_STDIO    Driver_USART1
 #define NS_DRIVER_STDIO     Driver_USART0
 
+/**  
+ * \brief A convenient struct to include all required Non-Secure state configuration.
+ */
+typedef struct tz_nonsecure_setup_conf {
+	uint32_t msp_ns;
+	uint32_t psp_ns;
+	uint32_t vtor_ns;
+	struct {
+		uint32_t npriv:1;
+		uint32_t spsel:1;
+		uint32_t reserved:30;
+	} control_ns;
+} tz_nonsecure_setup_conf_t;
+
+/**
+ * \brief Configure nonsecure vtor offset
+ */
+void configure_nonsecure_vtor_offset(uint32_t vtor_ns);
+
+
 /**
  * \brief Store the addresses of memory regions
  */
@@ -106,9 +126,9 @@ void spu_clear_irq(void);
 void sau_and_idau_cfg(void);
 
 /**
- * \brief Configure rom, ram and peripherials
+ * \brief Configure rom, ram and peripherials non-secure
  */
-void configuration_Z(void);
+void non_secure_configuration(void);
 
 /**
  * \brief Get non-secure vector table.
