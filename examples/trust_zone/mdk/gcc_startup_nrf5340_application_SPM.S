@@ -392,6 +392,11 @@ Reset_Handler:
 .L_loop3_done:
 #endif /* __STARTUP_CLEAR_BSS */
 
+/* Setup Vector Table Offset Register. */
+    ldr     r0, =__isr_vector
+    ldr     r1, =0xE000ED08 /* SCB->VTOR */
+    str     r0, [r1]
+
 /* Execute SystemInit function. */
     bl SystemInit
 
