@@ -1,23 +1,18 @@
 /*
  
 Copyright (c) 2009-2021 ARM Limited. All rights reserved.
-
     SPDX-License-Identifier: Apache-2.0
 
 Licensed under the Apache License, Version 2.0 (the License); you may
 not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an AS IS BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
 NOTICE: This file has been modified by Nordic Semiconductor ASA.
-
 */
 
     .syntax unified
@@ -72,7 +67,7 @@ __HeapLimit:
     .align 2
     .globl __isr_vector
 __isr_vector:
-    .long   Image$$ARM_LIB_STACK$$ZI$$Limit                  /* Top of Stack */
+    .long   Image$$ARM_LIB_STACK_MSP$$ZI$$Limit                  /* Top of Stack */
     .long   Reset_Handler
     .long   NMI_Handler
     .long   HardFault_Handler
@@ -455,10 +450,7 @@ Reset_Handler:
     b       .L_loop2
 .L_loop2_done:
 
-/* Setup Vector Table Offset Register. */
-    ldr     r0, =__isr_vector
-    ldr     r1, =0xE000ED08 /* SCB->VTOR */
-    str     r0, [r1]
+
 
 /* Execute SystemInit function. */
     bl SystemInit
