@@ -51,6 +51,7 @@
 #include "nrfx_wdt.h"
 
 #include "leds.h"
+#include "examples/trust_zone/secure_zone/region_defs.h" /*TODO: Quickfix*/
 
 /*---------------------------------------------------------------------------*/
 static const nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
@@ -70,7 +71,11 @@ void
 watchdog_init(void)
 {
   nrfx_err_t err_code;
-  err_code = nrfx_wdt_init(&wdt, NULL, &wdt_event_handler);
+  #if defined(NRF_TRUSTZONE_NONSECURE)
+    err_code = nrfx_wdt_init(&wdt, NS_CODE_START, &wdt_event_handler);
+  #else
+    err_code = nrfx_wdt_init(&wdt, NULL, &wdt_event_handler);
+  #endif
 
   if(err_code != NRFX_SUCCESS) {
     return;
