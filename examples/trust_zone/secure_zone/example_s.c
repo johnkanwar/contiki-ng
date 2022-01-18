@@ -12,6 +12,7 @@
 // #include <cortex-m/tz.h>
 #include "dev/leds.h"
 #include "dev/etc/rgb-led/rgb-led.h"
+#include "region_defs.h"
 
 typedef void __attribute__((cmse_nonsecure_call)) (*tz_ns_func_ptr_t)(void);
 #define TZ_NONSECURE_FUNC_PTR_DECLARE(fptr) tz_ns_func_ptr_t fptr
@@ -46,7 +47,7 @@ PROCESS_THREAD(example_s_process, ev, data)
 
     sau_and_idau_cfg();
     non_secure_configuration();
-    unsigned int *vtor_ns = (unsigned int *)0x50000; // TODO_John: Don't hardcode 0x50000
+    unsigned int *vtor_ns = (unsigned int *)NS_CODE_START;
     printf("NS IMAGE AT 0x%x \n", (unsigned int)vtor_ns);
     printf("NS MSP AT 0x%x \n", vtor_ns[0]);
     printf("NS reset vector AT 0x%x \n", vtor_ns[1]);

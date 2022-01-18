@@ -481,8 +481,8 @@ void non_secure_configuration(void)
 {
     spu_regions_reset_all_secure();
     /*Hard coded linker script addresses*/
-    spu_regions_flash_config_non_secure(0x50000,0x7ffff); //TODO_John: Fix memory address so they are not hardcoded perhaps REGION_DECLARE
-    spu_regions_sram_config_non_secure(0x20040000,0x2007ffff); //TODO_John: Fix memory address so they are not hardcoded perhaps defines?
+    spu_regions_flash_config_non_secure((uint32_t)NS_CODE_START,(uint32_t)NS_ROM_LIMIT_ADDR);
+    spu_regions_sram_config_non_secure((uint32_t)NS_DATA_START,(uint32_t)NS_DATA_LIMIT);
     spu_periph_init_cfg();
 }
 
