@@ -20,12 +20,12 @@ CONTIKI_CPU_DIRS += $(CONTIKI)/examples/trust_zone/mdk/
 ifeq ($(example_1),1)
     ifeq ($(secure_build),1)
         $(info "SECUREBUILD ${secure_build}")
-        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_SPM.ld
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_SPM_build.ld
     else ifeq ($(secure_build),2)
         LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_nrf_bl2.ld
     else
         $(info "NONSECUREBUILD ${secure_build}")
-        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my_SPM.ld
+        LDSCRIPT ?= $(CONTIKI)/examples/trust_zone/mdk/nrf5340_xxaa_application_ns_my_SPM_build.ld
     endif
 else
     ifeq ($(secure_build),1)
