@@ -32,6 +32,8 @@
 #define NS_MSP_STACK_SIZE       (0x000000A0)
 #define NS_PSP_STACK_SIZE       (0x00000140)
 
+#define NS_ROM_LIMIT_ADDR 	 (0x7ffff)
+/*#define NS_RAM_LIMIT_ADDR 	 (0x2007ffff) */
 /* Size of nRF SPU (Nordic IDAU) regions */
 #define SPU_FLASH_REGION_SIZE   (0x00004000)
 #define SPU_SRAM_REGION_SIZE    (0x00002000)
