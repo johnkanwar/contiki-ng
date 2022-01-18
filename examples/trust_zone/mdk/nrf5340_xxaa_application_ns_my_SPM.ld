@@ -111,7 +111,7 @@ SECTIONS
 
     . = ALIGN(4);
 
-
+/*DIFF start*/
     .copy.table :
     {
         . = ALIGN(4);
@@ -134,7 +134,7 @@ SECTIONS
         LONG (DEFINED(__bss2_start__) ? __bss2_end__ - __bss2_start__ : 0)
         __zero_table_end__ = .;
     } > FLASH
-
+/*DIFF end*/
 
 
     __etext = .;
@@ -183,6 +183,7 @@ SECTIONS
         __bss_end__ = .;
     } > RAM
 
+/*DIFF start*/
     .msp_stack : ALIGN(32)
     {
         . += __msp_stack_size__;
@@ -196,7 +197,7 @@ SECTIONS
     } > RAM
     Image$$ARM_LIB_STACK$$ZI$$Base = ADDR(.psp_stack);
     Image$$ARM_LIB_STACK$$ZI$$Limit = ADDR(.psp_stack) + SIZEOF(.psp_stack);
-
+/*DIFF end*/
 
     .heap (COPY):
     {
@@ -232,7 +233,11 @@ SECTIONS
     __StackTop = ORIGIN(RAM) + LENGTH(RAM);
     __StackLimit = __StackTop - SIZEOF(.stack_dummy);
     
-    PROVIDE(__stack = Image$$ARM_LIB_STACK$$ZI$$Limit);
+/*DIFF start*/
+/*    PROVIDE(__stack = Image$$ARM_LIB_STACK$$ZI$$Limit); */
+    PROVIDE(__stack = __StackTop);
+
+/*DIFF end*/
 
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
