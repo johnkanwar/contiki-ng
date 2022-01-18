@@ -1,8 +1,8 @@
-#Call this one to build one example.
-#Go into secure_zone and build.
-#cd out and cd into non_secure_zone and build.
-#Call a script that merge both hex files.
-#Flash that hex file.
+# How the script works (tz).
+# Go into secure and non-secure zone to build.
+# Copy respecitve hex file and merge them.
+# Go into secure_zone/Build/.. and replace hex with merged hex.
+# Flash the hex file.
 
 example_1 = 1
 #secure_build = 1
@@ -16,10 +16,6 @@ else
 endif
 
 
-
-test:
-	cd secure_zone && $(MAKE) clean \
-	&& cd ../non_secure_zone $(MAKE) clean
 
 rm:
 	$(info	Removing builds) \
@@ -62,12 +58,12 @@ tz:
 	cd secure_zone/ \
 	&& sudo make TARGET=nrf BOARD=nrf5340/dk/application example_s.upload PORT=/dev/ttyACM2 && make TARGET=nrf BOARD=nrf5340/dk/application login PORT=/dev/ttyACM2
 
+window:
+	cd secure_zone/ \
+	&& make TARGET=nrf BOARD=nrf5340/dk/application login PORT=/dev/ttyACM2
+
 run:
 	cd secure_zone/ \
 	&& sudo make TARGET=nrf BOARD=nrf5340/dk/application example_s.upload PORT=/dev/ttyACM2 && make TARGET=nrf BOARD=nrf5340/dk/application login PORT=/dev/ttyACM2
+	
 
-# How the script works (tz).
-# Go into secure and non-secure zone to build.
-# Copy respecitve hex file and merge them.
-# Go into secure_zone/Build/.. and replace hex with merged hex.
-# Flash the hex file.
