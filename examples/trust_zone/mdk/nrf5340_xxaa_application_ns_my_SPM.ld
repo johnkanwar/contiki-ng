@@ -3,14 +3,13 @@
 SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
 
+#include "../secure_zone/region_defs.h"
+
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00050000, LENGTH = 0x30000 /*0x100000*/
+  FLASH (rx) : ORIGIN = NS_CODE_START, LENGTH = NS_CODE_SIZE /*0x100000*/
   /*EXTFLASH (rx) : ORIGIN = 0x10000000, LENGTH = 0x8000000*/
-  RAM (rwx) : ORIGIN = 0x20040000, LENGTH = 0x40000
-  /*RAM (rwx) : ORIGIN = 0x20040000, LENGTH = 0x40000*/
-  /*NON_SECURE_FUNC (rx) : ORIGIN = 0x00050000, LENGTH = 0x00000100*/ 
-
+  RAM (rwx) : ORIGIN = NS_DATA_START, LENGTH = NS_DATA_SIZE
 }
 
 
