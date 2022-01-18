@@ -91,6 +91,11 @@ SECTIONS
         KEEP(*(.eh_frame*))
     } > FLASH
 
+    .gnu.sgstubs :
+    {
+        . = ALIGN(32);
+    } > FLASH
+
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
