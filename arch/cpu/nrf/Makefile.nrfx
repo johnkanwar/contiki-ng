@@ -1,4 +1,5 @@
-NRFX_ROOT = $(CONTIKI_CPU)/lib/nrfx
+#NRFX_ROOT = $(CONTIKI_CPU)/lib/nrfx
+NRFX_ROOT = $(CONTIKI_CPU)/lib/nrfx_override
 
 ifeq (,$(wildcard $(NRFX_ROOT)/*))
     $(warning $(NRFX_ROOT) does not exist or is empty.)
