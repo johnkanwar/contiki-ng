@@ -92,6 +92,9 @@ PROCESS_THREAD(rssi_scan_process, ev, data)
   while (true)
   {
     // run_rssi_scan();
+
+    printf("RSSI:");
+
     for (ch = channel_min; ch <= channel_max; ch++)
     {
       if (NETSTACK_RADIO.set_value(RADIO_PARAM_CHANNEL, ch) != RADIO_RESULT_OK)
